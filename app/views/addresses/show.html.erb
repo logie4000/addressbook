@@ -1,0 +1,55 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Lastname:</strong>
+  <%= @address.lastName %>
+</p>
+
+<p>
+  <strong>Firstname:</strong>
+  <%= @address.firstName %>
+</p>
+
+<p>
+  <strong>Street1:</strong>
+  <%= @address.street1 %>
+</p>
+
+<p>
+  <strong>Street2:</strong>
+  <%= @address.street2 %>
+</p>
+
+<p>
+  <strong>City:</strong>
+  <%= @address.city %>
+</p>
+
+<p>
+  <strong>State:</strong>
+  <%= @address.state %>
+</p>
+
+<p>
+  <strong>Zip:</strong>
+  <%= @address.zip %>
+</p>
+
+<% if @address.spouse %>
+<p>
+  <strong>Spouse:</strong>
+  <%= "#{@address.spouse.firstName} #{@address.spouse.lastName}" %>
+</p>
+<% end %>
+
+<% unless (@address.children.empty?) %>
+<p>
+  <strong>Children:</strong>
+  <% @address.children.each do |child| %>
+    <%= "#{child.firstName} #{child.lastName}" %>
+  <% end %>
+</p>
+<% end %>
+
+<%= link_to 'Edit', edit_address_path(@address) %> |
+<%= link_to 'Back', addresses_path %>

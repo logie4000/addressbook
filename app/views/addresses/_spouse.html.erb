@@ -1,0 +1,8 @@
+  <%= form_for address do |address_form| %>
+    <%= address_form.fields_for :spouse, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
+      <%= ff.text_field :firstName %>
+      <%= ff.text_field :lastName %>
+    <% end %>
+  <% end %>
+
+
