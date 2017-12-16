@@ -3,5 +3,7 @@ module AddressesHelper
     if (address.spouse.nil?)
       address.spouse.build()
     end
+    
+    return address
   end
 end
