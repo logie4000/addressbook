@@ -75,7 +75,7 @@ class AddressesController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def address_params
-      params.require(:address).permit(:lastName, :firstName, :street1, :street2, :city, :state, :zip, :spouse_attributes[:lastName, :firstName], :children_attributes[:lastName, :firstName])
+      params.require(:address).permit(:lastName, :firstName, :street1, :street2, :city, :state, :zip, :spouse_attributes => [:lastName, :firstName], :children_attributes => [:lastName, :firstName])
     end
 
     def spouse_params
