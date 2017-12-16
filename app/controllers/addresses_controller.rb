@@ -40,6 +40,8 @@ class AddressesController < ApplicationController
   # PATCH/PUT /addresses/1
   # PATCH/PUT /addresses/1.json
   def update
+    Rails.logger.debug "Running Address.update(#{params.inspect})"
+    
     respond_to do |format|
       if @address.update(address_params)
         format.html { redirect_to @address, notice: 'Address was successfully updated.' }
