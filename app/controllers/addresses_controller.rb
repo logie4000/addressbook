@@ -15,6 +15,7 @@ class AddressesController < ApplicationController
   # GET /addresses/new
   def new
     @address = Address.new
+    @residents = @address.residents
   end
 
   # GET /addresses/1/edit
