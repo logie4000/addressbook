@@ -5,10 +5,9 @@
 <table>
   <thead>
     <tr>
-      <th>Lastname</th>
-      <th>Firstname</th>
-      <th>Street1</th>
-      <th>Street2</th>
+      <th>Name</th>
+      <th>Street</th>
+      <th>Street</th>
       <th>City</th>
       <th>State</th>
       <th>Zip</th>
@@ -19,8 +18,7 @@
   <tbody>
     <% @addresses.each do |address| %>
       <tr>
-        <td><%= address.lastName %></td>
-        <td><%= address.firstName %></td>
+        <td><%= full_resident_name(address.resident) %></td>
         <td><%= address.street1 %></td>
         <td><%= address.street2 %></td>
         <td><%= address.city %></td>
