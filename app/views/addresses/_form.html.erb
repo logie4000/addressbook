@@ -47,10 +47,34 @@
   </div>
 
 Spouse:
-<%= render :partial => "spouse", locals: { :address => @address } %>
+  <%= form.fields_for :spouse, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
+    <div class="field">
+      <%= ff.text_field :firstName %>
+      <%= ff.text_field :lastName %>
+    </div>
+  <% end %>
 
 Children:
-<%= render :partial => "children_table", locals: { :address => @address } %>
+<table id="children_table" class="children_table">
+  <thead><tr><th id="column_0">First Name</th><th id="column_1"></th></tr></thead>
+  <%= form.fields_for :children, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
+      <tr id="<%= h("child_#{ff.object.id}") %>" class="child">
+        <%= ff.text_field :firstName, :size => 40 %>
+        <%= ff.text_field :lastName, :value => last_name, :hidden => true %>
+        <td>
+          <% if (ff.object.persisted?) %>
+            Delete
+          <% end %>
+        </td>
+  </tr>
+  <% end %>
+
+    <tfoot><div class="links">
+      <tr>
+        Add Child
+      </tr>
+    </div></tfoot>
+</table>
 
   <div class="actions">
     <%= form.submit %>
