@@ -4,4 +4,8 @@ module AddressesHelper
     
     return address
   end
+  
+  def full_resident_name(resident)
+    return h("#{resident.firstName} #{resident.lastName}")
+  end
 end
