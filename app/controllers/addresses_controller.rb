@@ -6,7 +6,7 @@ class AddressesController < ApplicationController
   def index
     @addresses = Address.all
   end
-
+  
   # GET /addresses/1
   # GET /addresses/1.json
   def show
@@ -15,6 +15,8 @@ class AddressesController < ApplicationController
   # GET /addresses/new
   def new
     @address = Address.new
+    @spouse = @address.spouse
+    @children = @address.children
   end
 
   # GET /addresses/1/edit
