@@ -15,6 +15,7 @@ class AddressesController < ApplicationController
   # GET /addresses/new
   def new
     @address = Address.new
+    @address.build_resident if (@address.resident.nil?)
     @resident = @address.resident
   end
 
