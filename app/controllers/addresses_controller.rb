@@ -15,8 +15,6 @@ class AddressesController < ApplicationController
   # GET /addresses/new
   def new
     @address = Address.new
-    @spouse = @address.spouse
-    @children = @address.children
   end
 
   # GET /addresses/1/edit
@@ -65,10 +63,6 @@ class AddressesController < ApplicationController
     end
   end
 
-  def add_spouse
-    @address.build_spouse(spouse_params)
-  end
- 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_address
@@ -77,10 +71,6 @@ class AddressesController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def address_params
-      params.require(:address).permit(:lastName, :firstName, :street1, :street2, :city, :state, :zip, :spouse_attributes => [:id, :lastName, :firstName, :_destroy], :children_attributes => [:id, :lastName, :firstName, :_destroy])
-    end
-
-    def spouse_params
-      require(:person).permit(:lastName, :firstName)
+      params.require(:address).permit(:lastName, :firstName, :street1, :street2, :city, :state, :zip, :residents_attributes => [:id, :lastName, :firstName, :_destroy])
     end
 end
