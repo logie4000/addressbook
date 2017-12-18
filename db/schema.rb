@@ -40,3 +40,4 @@ ActiveRecord::Schema.define(version: 20171215014626) do
   add_foreign_key "addresses", "people", column: "spouse_id"
   add_foreign_key "people", "addresses"
 end
+
