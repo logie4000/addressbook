@@ -1,10 +1,9 @@
-  <%= form_with model: address do |address_form| %>
-    <%= address_form.fields_for :spouse, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
-      <div class="field">
-        <%= ff.text_field :firstName %>
-        <%= ff.text_field :lastName %>
-      </div>
-    <% end %>
+<%= form_with model: address do |address_form| %>
+  <%= address_form.fields_for :spouse, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
+    <div class="field">
+      <%= ff.text_field :firstName %>
+      <%= ff.text_field :lastName %>
+    </div>
   <% end %>
-
+<% end %>
 
