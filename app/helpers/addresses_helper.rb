@@ -6,6 +6,8 @@ module AddressesHelper
   end
   
   def full_resident_name(resident)
+    return "" if resident.nil?
+    
     return h("#{resident.firstName} #{resident.lastName}")
   end
 end
