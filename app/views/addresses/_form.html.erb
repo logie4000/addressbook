@@ -11,15 +11,15 @@
     </div>
   <% end %>
 
-  <div class="field">
-    <%= form.label :lastName %>
-    <%= form.text_field :lastName, id: :address_lastName %>
-  </div>
-
-  <div class="field">
-    <%= form.label :firstName %>
-    <%= form.text_field :firstName, id: :address_firstName %>
-  </div>
+  <%= form.fields_for :residents, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
+    <div class="field">
+      <%= ff.label :lastName %>
+      <%= ff.text_field :lastName %>
+      <%= ff.label :firstName %>
+      <%= ff.text_field :firstName %>
+      
+    </div>
+  <% end %>
 
   <div class="field">
     <%= form.label :street1 %>
@@ -45,31 +45,6 @@
     <%= form.label :zip %>
     <%= form.text_field :zip, id: :address_zip %>
   </div>
-
-Spouse:
-  <%= form.fields_for :spouse, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
-    <div class="field">
-      <%= ff.text_field :firstName %>
-      <%= ff.text_field :lastName %>
-    </div>
-  <% end %>
-
-Children:
-<table id="children_table" class="children_table">
-  <thead><tr><th id="column_0">First Name</th><th id="column_1"></th></tr></thead>
-  <%= form.fields_for :children, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
-      <tr id="<%= h("child_#{ff.object.id}") %>" class="person">
-        <td>
-        <%= ff.text_field :firstName, :size => 40 %>
-        <%= ff.text_field :lastName, :value => @address.lastName, :hidden => true %>
-        </td>
-        <td>
-          <% if (ff.object.persisted?) %>
-            Delete
-          <% end %>
-        </td>
-       </tr>
-  <% end %>
 
     <tfoot><div class="links">
       <tr>
