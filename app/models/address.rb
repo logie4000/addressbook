@@ -1,4 +1,4 @@
 class Address < ApplicationRecord
   has_many :children, :dependent => :destroy
-  has_one :spouse, :class_name => "Person", :optional => true
+  belongs_to :spouse, :class_name => "Person", :optional => true
 end
