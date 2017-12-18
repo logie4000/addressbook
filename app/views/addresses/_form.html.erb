@@ -47,9 +47,10 @@
   </div>
 
 Spouse:
-<div class="spouse">
-  <%= render :partial => "spouse", locals: { :address => @address } %>
-</div>
+<%= render :partial => "spouse", locals: { :address => @address } %>
+
+Children:
+<%= render :partial => "children_table", locals: { :address => @address } %>
 
   <div class="actions">
     <%= form.submit %>
