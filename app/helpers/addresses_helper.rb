@@ -4,6 +4,10 @@ module AddressesHelper
       address.build_spouse()
     end
     
+    if (address.children.empty?)
+      address.children.build()
+    end
+    
     return address
   end
 end
