@@ -60,7 +60,7 @@ Children:
   <%= form.fields_for :children, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
       <tr id="<%= h("child_#{ff.object.id}") %>" class="child">
         <%= ff.text_field :firstName, :size => 40 %>
-        <%= ff.text_field :lastName, :value => last_name, :hidden => true %>
+        <%= ff.text_field :lastName, :value => @address.lastName, :hidden => true %>
         <td>
           <% if (ff.object.persisted?) %>
             Delete
