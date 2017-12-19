@@ -5,6 +5,7 @@ class CreatePeople < ActiveRecord::Migration[5.1]
       t.string :firstName
       t.references :address, index: true, foreign_key: true
       t.references :parent, index: true
+      t.references :spouse, index: true
       
       t.timestamps
     end
