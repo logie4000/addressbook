@@ -1,0 +1,17 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <%= full_name(@person) %>
+
+  <%= h(@address.street1) %>
+  <% unless (@address.street2.blank?) %>
+    <%= h(@address.street2) %>
+  <% end %>
+  <%= h("#{@address.city}, #{@address.state} #{@address.zip}") %>
+</p>
+
+Spouse:
+  <%= full_name(@person.spouse) if (@person.spouse) %>
+
+<%= link_to 'Edit Person', edit_person_path(@address) %> |
+<%= link_to 'Back to People', perople_path %>
