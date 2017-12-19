@@ -1,0 +1,62 @@
+<%= form_with(model: setup_address(@address), local: true) do |form| %>
+  <% if @person.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@person.errors.count, "error") %> prohibited this person from being saved:</h2>
+
+      <ul>
+      <% @person.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+  
+  <div class="field">
+    <%= form.label :lastName %>
+    <%= form.text_field :lastName %>
+    <%= form.label :firstName %>
+    <%= form.text_field :firstName %>      
+  </div>
+    
+  <%= form.fields_for :address, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
+    <div class="field">
+      <%= ff.label :street1 %>
+      <%= ff.text_field :street1, id: :address_street1 %>
+    </div>
+
+    <div class="field">
+      <%= ff.label :street2 %>
+      <%= ff.text_field :street2, id: :address_street2 %>
+    </div>
+
+    <div class="field">
+      <%= ff.label :city %>
+      <%= ff.text_field :city, id: :address_city %>
+    </div>
+
+    <div class="field">
+      <%= ff.label :state %>
+      <%= ff.text_field :state, id: :address_state %>
+    </div>
+
+    <div class="field">
+      <%= ff.label :zip %>
+      <%= ff.text_field :zip, id: :address_zip %>
+    </div>
+  <% end %>
+
+
+<strong>Spouse</strong>
+  <%= form.fields_for :spouse, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
+    <div class="field">
+      <%= ff.label :lastName %>
+      <%= ff.text_field :lastName %>
+      <%= ff.label :firstName %>
+      <%= ff.text_field :firstName %>      
+    </div>
+  <% end %>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>
