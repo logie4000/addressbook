@@ -1,7 +1,7 @@
 module AddressesHelper
   def setup_address(address)
     address.build_resident() if (address.resident.nil?)
-    
+    address.resident.build_spouse() if (address.resident.spouse.nil?)
     return address
   end
   
