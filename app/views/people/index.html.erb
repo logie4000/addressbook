@@ -18,7 +18,7 @@
   <tbody>
     <% @people.each do |person| %>
       <tr>
-        <td><%= person.full_name %></td>
+        <td><%= full_name(person) %></td>
         <td><%= person.address.street1 %></td>
         <td><%= person.address.street2 %></td>
         <td><%= person.address.city %></td>
