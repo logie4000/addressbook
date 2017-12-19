@@ -46,15 +46,13 @@
   </div>
 
 <strong>Spouse</strong>
-  <%= form_with model: :resident do |resident_form| %>
-    <%= resident_form.fields_for :resident, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
-      <div class="field">
-        <%= ff.label :lastName %>
-        <%= ff.text_field :lastName %>
-        <%= ff.label :firstName %>
-        <%= ff.text_field :firstName %>      
-      </div>
-    <% end %>
+  <%= form.fields_for :spouse, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
+    <div class="field">
+      <%= ff.label :lastName %>
+      <%= ff.text_field :lastName %>
+      <%= ff.label :firstName %>
+      <%= ff.text_field :firstName %>      
+    </div>
   <% end %>
 
   <div class="actions">
