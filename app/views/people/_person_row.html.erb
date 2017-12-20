@@ -1,6 +1,6 @@
 <tr>
-  <td><%= full_name(person) %></td>
-  <td><%= full_name(person.spouse) if (person.spouse) %></td>
+  <td><%= link_to(full_name(person), person) %></td>
+  <td><%= link_to(full_name(person.spouse), person.spouse) if (person.spouse) %></td>
   <% if (person.address) %>
     <td><%= person.address.street1 %></td>
     <td><%= person.address.street2 %></td>
@@ -25,7 +25,6 @@
     <%= h(child_names.join(",")) %>
   <% end %>
   </td>
-  <td><%= link_to 'Show', person %></td>
   <td><%= link_to 'Edit', edit_person_path(person) %></td>
   <td><%= link_to 'Destroy', person, method: :delete, data: { confirm: 'Are you sure?' } %></td>
 </tr>
