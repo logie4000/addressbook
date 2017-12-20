@@ -77,6 +77,17 @@ class PeopleController < ApplicationController
     end
   end
 
+  def remove_child
+    Rails.logger.debug "remove_child: #{params.inspect}"
+    child = Person.find(params[:child_id])
+
+    @person.children.delete(child) if (@person)
+    
+    respond_to do |format|
+      format.js
+    end
+  end
+  
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_person
