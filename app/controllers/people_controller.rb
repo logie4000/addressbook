@@ -83,8 +83,10 @@ class PeopleController < ApplicationController
       @person = Person.find(params[:id])
       if (@person.parent)
         @person = @person.parent
-      elsif (@person.children.empty? && @person.spouse && !@person.spouse.children.empty?)
-        @person = @person.spouse
+      end
+      
+      if (@person != @person.address.resident)
+        @person = @person.address.resident
       end
     end
 
