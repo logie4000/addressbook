@@ -19,11 +19,13 @@
     <% @people.each do |person| %>
       <tr>
         <td><%= full_name(person) %></td>
-        <td><%= person.address.street1 %></td>
-        <td><%= person.address.street2 %></td>
-        <td><%= person.address.city %></td>
-        <td><%= person.address.state %></td>
-        <td><%= person.address.zip %></td>
+        <% if (person.address) %>
+          <td><%= person.address.street1 %></td>
+          <td><%= person.address.street2 %></td>
+          <td><%= person.address.city %></td>
+          <td><%= person.address.state %></td>
+          <td><%= person.address.zip %></td>
+        <% end %>
         <td><%= link_to 'Show', person %></td>
         <td><%= link_to 'Edit', edit_person_path(person) %></td>
         <td><%= link_to 'Destroy', person, method: :delete, data: { confirm: 'Are you sure?' } %></td>
