@@ -61,10 +61,10 @@
     <%= form.fields_for :children, :child_index => ->{ (Time.now.to_f * 10000).to_i } do |ff| %>
       <tr id="<%= h("child_#{ff.index}") %>" class="direction">              
         <td>
-          <%= f.text_field :firstName %>
+          <%= ff.text_field :firstName %>
         </td>
         <td>
-          <%= f.text_field :lastName %>
+          <%= ff.text_field :lastName %>
         </td>
         <td>
           <% if (ff.object.persisted?) %>
