@@ -10,7 +10,9 @@
       </ul>
     </div>
   <% end %>
-  
+
+  <% @form = form %>
+
   <div class="field">
     <%= form.label :firstName %>
     <%= form.text_field :firstName %>      
@@ -77,7 +79,7 @@
       <% row_num += 1 %>
     <% end %>
     <tfoot><tr>
-      <td><span class='add-child-link'>Add Child</span></td>
+      <td><span class='add-child-link'><%= add_child_link("Add Child", person) %></span></td>
     </tr></tfoot>
   </table>
 
