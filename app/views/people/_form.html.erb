@@ -45,7 +45,6 @@
     </div>
   <% end %>
 
-
 <strong>Spouse</strong>
   <%= form.fields_for :spouse, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
     <div class="field">
@@ -56,32 +55,30 @@
     </div>
   <% end %>
 
-<table id="children_table" class="children_table">
-  <thead><tr><th id="column_0">Children</th><th id="column_1"></th><th id="column_2"></th></tr></thead>
-  <% row_num = 0 %>
-    
+  <table id="children_table" class="children_table">
+    <thead><tr><th id="column_0">Children</th><th id="column_1"></th><th id="column_2"></th></tr></thead>
+    <% row_num = 0 %> 
     <%= form.fields_for :children, :child_index => ->{ (Time.now.to_f * 10000).to_i } do |ff| %>
-    <tr id="<%= h("child_#{ff.index}") %>" class="direction">              
-      <td>
-        <%= f.text_field :firstName %>
-      </td>
-      <td>
-        <%= f.text_field :lastName %>
-      </td>
-      <td>
-        <% if (ff.object.persisted?) %>
-          Delete
-        <% end %>
-      </td>
+      <tr id="<%= h("child_#{ff.index}") %>" class="direction">              
+        <td>
+          <%= f.text_field :firstName %>
+        </td>
+        <td>
+          <%= f.text_field :lastName %>
+        </td>
+        <td>
+          <% if (ff.object.persisted?) %>
+            Delete
+          <% end %>
+        </td>
       </tr>
       <% row_num += 1 %>
     <% end %>
-  <% end %>
+    <tfoot><tr>
+      <td><span class='add-child-link'>Add Child</span></td>
+    </tr></tfoot>
+  </table>
 
-  <tfoot><tr>
-    <td><span class='add-child-link'>Add Child</span></td>
-  </tr></tfoot>
-</table>
   <div class="actions">
     <%= form.submit %>
   </div>
