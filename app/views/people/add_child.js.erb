@@ -1,0 +1,13 @@
+
+var newRow = document.createElement('tr');
+newRow.innerHTML="<%= j( render :partial => 'new_child', :locals => { :person => @person } ) %>";
+
+
+var child_count = document.getElementsByClassName('child').length;
+var childrenTable = document.getElementById("children_table");
+var tableBody = childrenTable.getElementsByTagName("tbody")[0];
+
+console.log("Creating new Child (" + child_count + ") for Person...");
+newRow.className = 'child'
+newRow.id = "child_" + child_count;
+tableBody.appendChild(newRow);
