@@ -1,6 +1,6 @@
 
 var newRow = document.createElement('tr');
-newRow.innerHTML="<%= j( render :partial => 'new_child', :locals => { :person => @person } ) %>";
+newRow.innerHTML="<%= j( render :partial => 'new_child', :locals => { :person => @person, :form => @form } ) %>";
 
 
 var child_count = document.getElementsByClassName('child').length;
