@@ -1,6 +1,6 @@
 <tr>
-  <td><%= link_to(full_name(person), person) %></td>
-  <td><%= link_to(full_name(person.spouse), person.spouse) if (person.spouse) %></td>
+  <td><%= link_to(person.lastName, person) %></td>
+  <td><%= resident_names(person) %></td>
   <% if (person.address) %>
     <td><%= person.address.street1 %></td>
     <td><%= person.address.street2 %></td>
