@@ -48,6 +48,10 @@ class PeopleController < ApplicationController
     
     respond_to do |format|
       if @person.update(person_params)
+        if (@person.spouse)
+          @person.spouse.address = @person.address
+        end
+        
         format.html { redirect_to @person, notice: 'Person was successfully updated.' }
         format.json { render :show, status: :ok, location: @person }
       else
