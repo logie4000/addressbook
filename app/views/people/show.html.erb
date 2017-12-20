@@ -1,7 +1,7 @@
 <p id="notice"><%= notice %></p>
 
 <p>
-  <%= full_name(@person) %>
+  <%= full_name(@person) %><%= h(" & #{full_name(@spouse)}) if @spouse %>
 
   <%= h(@address.street1) %>
   <% unless (@address.street2.blank?) %>
@@ -9,9 +9,6 @@
   <% end %>
   <%= h("#{@address.city}, #{@address.state} #{@address.zip}") %>
 </p>
-
-Spouse:
-  <%= full_name(@person.spouse) if (@person.spouse) %>
 
 <%= link_to 'Edit Person', edit_person_path(@person) %> |
 <%= link_to 'Back to People', people_path %>
