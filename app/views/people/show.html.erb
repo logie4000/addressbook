@@ -12,7 +12,7 @@
 </p>
 <% if (@children) %>
   <% @children.each do |child| %>
-    <% if (child.lastName != @person.lastName %>
+    <% if (child.lastName != @person.lastName) %>
       <%= full_name(child) %><br>
     <% else %>
       <%= h(child.firstName) %>
