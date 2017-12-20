@@ -1,8 +1,7 @@
 <tr class="child" id="direction_new">
 <% new_child = Person.new %>
-
-<%= form.fields_for :children, new_child, :child_index => ->{ (Time.now.to_f * 1000000).to_i } do |ff| %>
-    <td><%= h("") %></td>
+<%= form_with model: @person do |form| %>
+  <%= form.fields_for :children, new_child, :child_index => ->{ (Time.now.to_f * 1000000).to_i } do |ff| %>
     <td>
       <%= ff.text_field :firstName %>
     </td>
@@ -12,5 +11,7 @@
     <td>
     &nbsp;
     </td>
+  <% end %>
 <% end %>
 </tr>
+
