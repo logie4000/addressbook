@@ -14,4 +14,12 @@ module PeopleHelper
     
     return h(full_name)
   end
+  
+  def add_child_link(text, person)
+    if (person && person.id)
+      link_to(text, add_child_person_path( person ), :remote => true, :method => :patch )
+    else
+      link_to(text, add_child_row_person_path, :remote => true )
+    end    
+  end
 end
