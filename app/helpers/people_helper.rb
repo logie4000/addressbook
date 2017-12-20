@@ -2,6 +2,8 @@ module PeopleHelper
   def setup_person(person)
     person.build_address() if (person.address.nil?)
     person.build_spouse() if (person.spouse.nil?)
+    person.children.build() if (person.children.empty?)
+    
     return person
   end
   
