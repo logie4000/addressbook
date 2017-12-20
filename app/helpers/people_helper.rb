@@ -19,7 +19,7 @@ module PeopleHelper
     if (person && person.id)
       link_to(text, add_child_person_path( person ), :remote => true, :method => :patch )
     else
-      link_to(text, add_child_row_person_path, :remote => true )
+      link_to(text, add_child_row_people_path, :remote => true )
     end    
   end
   
