@@ -11,7 +11,7 @@
         </td>
         <td>
           <% if (ff.object.persisted?) %>
-            Delete
+            <%= link_to "Delete", remove_child_person_path(person, :child_id => ff.object.id), :remote => :true, :method => :patch %>
           <% end %>
         </td>
       </tr>
