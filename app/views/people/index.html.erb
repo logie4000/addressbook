@@ -6,11 +6,13 @@
   <thead>
     <tr>
       <th>Name</th>
+      <th>Spouse</th>
       <th>Street</th>
       <th>Street</th>
       <th>City</th>
       <th>State</th>
       <th>Zip</th>
+      <th>Children</th>
       <th colspan="3"></th>
     </tr>
   </thead>
@@ -19,12 +21,20 @@
     <% @people.each do |person| %>
       <tr>
         <td><%= full_name(person) %></td>
+        <td><%= full_name(person.spouse) if (person.spouse) %></td>
         <% if (person.address) %>
           <td><%= person.address.street1 %></td>
           <td><%= person.address.street2 %></td>
           <td><%= person.address.city %></td>
           <td><%= person.address.state %></td>
           <td><%= person.address.zip %></td>
+        <% end %>
+        <% unless (person.children.empty?) %>
+          <% child_names = Array.new %>
+          <% children.each do |child| %>
+            child_names << child.firstName
+          <% end %>
+          <%= h(join(",", child_names)) %>
         <% end %>
         <td><%= link_to 'Show', person %></td>
         <td><%= link_to 'Edit', edit_person_path(person) %></td>
