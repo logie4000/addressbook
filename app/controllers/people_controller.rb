@@ -13,6 +13,10 @@ class PeopleController < ApplicationController
     @address = @person.address
     @spouse = @person.spouse
     @children = @person.children
+    
+    if (@children.empty? && @spouse && !@spouse.children.empty?)
+      @children = @spouse.children
+    end
   end
 
   # GET /people/new
