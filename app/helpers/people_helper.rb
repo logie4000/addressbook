@@ -22,4 +22,8 @@ module PeopleHelper
       link_to(text, add_child_row_person_path, :remote => true )
     end    
   end
+  
+  def remove_child_link(text, child)
+    link_to(text, remove_child_person_path( child ), :remote => true, :method => :patch)
+  end  
 end
