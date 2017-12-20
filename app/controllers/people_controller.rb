@@ -11,14 +11,13 @@ class PeopleController < ApplicationController
   # GET /people/1.json
   def show
     @address = @person.address
+    @spouse = @person.spouse
+    @children = @person.children
   end
 
   # GET /people/new
   def new
     @person = Person.new
-    @spouse = @person.spouse
-    @address = @person.address
-    @children = @person.children
   end
 
   # GET /people/1/edit
