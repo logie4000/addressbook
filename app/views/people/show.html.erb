@@ -1,14 +1,23 @@
 <p id="notice"><%= notice %></p>
 
 <p>
-  <%= full_name(@person) %><%= h(" & #{full_name(@spouse)}) if @spouse %>
-
-  <%= h(@address.street1) %>
+  <h1><%= h(@person.lastName) %><%= h("/#{@spouse.lastName}") if @spouse %>
+  <%= full_name(@person) %><%= h(" & #{full_name(@spouse)}") if @spouse %>
+<br>
+  <%= h(@address.street1) %><br>
   <% unless (@address.street2.blank?) %>
-    <%= h(@address.street2) %>
+    <%= h(@address.street2) %><br>
   <% end %>
   <%= h("#{@address.city}, #{@address.state} #{@address.zip}") %>
 </p>
-
+<% if (@children) %>
+  <% @children.each do |child| %>
+    <% if (child.lastName != @person.lastName %>
+      <%= full_name(child) %><br>
+    <% else %>
+      <%= h(child.firstName) %>
+    <% end %>
+  <% end %>
+<% end %>
 <%= link_to 'Edit Person', edit_person_path(@person) %> |
 <%= link_to 'Back to People', people_path %>
