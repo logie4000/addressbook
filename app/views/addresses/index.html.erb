@@ -5,29 +5,12 @@
 <table>
   <thead>
     <tr>
-      <th>Name</th>
-      <th>Street</th>
-      <th>Street</th>
-      <th>City</th>
-      <th>State</th>
-      <th>Zip</th>
-      <th colspan="3"></th>
     </tr>
   </thead>
 
   <tbody>
     <% @addresses.each do |address| %>
-      <tr>
-        <td><%= full_resident_name(address.resident) %></td>
-        <td><%= address.street1 %></td>
-        <td><%= address.street2 %></td>
-        <td><%= address.city %></td>
-        <td><%= address.state %></td>
-        <td><%= address.zip %></td>
-        <td><%= link_to 'Show', address %></td>
-        <td><%= link_to 'Edit', edit_address_path(address) %></td>
-        <td><%= link_to 'Destroy', address, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-      </tr>
+      <%= render :partial => "people/person_row", :locals => {:person => address.resident} %>
     <% end %>
   </tbody>
 </table>
