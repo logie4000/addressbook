@@ -50,6 +50,7 @@ class PeopleController < ApplicationController
       if @person.update(person_params)
         if (@person.spouse)
           @person.spouse.address = @person.address
+          @person.spouse.spouse = @person
           @person.spouse.save
         end
         
