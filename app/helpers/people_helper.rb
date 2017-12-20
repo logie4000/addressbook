@@ -9,7 +9,9 @@ module PeopleHelper
   
   def full_name(person)
     return "" if person.nil?
+    full_name = "#{person.firstName} #{person.lastName}"
+    full_name += ", #{person.suffix}" unless (person.suffix.blank?)
     
-    return h("#{person.firstName} #{person.lastName}")
+    return h(full_name)
   end
 end
