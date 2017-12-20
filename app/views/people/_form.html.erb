@@ -52,10 +52,10 @@
 <strong>Spouse</strong>
   <%= form.fields_for :spouse, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
     <div class="field">
+      <%= ff.label :firstName %>
+      <%= ff.text_field :firstName %>
       <%= ff.label :lastName %>
       <%= ff.text_field :lastName %>
-      <%= ff.label :firstName %>
-      <%= ff.text_field :firstName %>      
     </div>
   <% end %>
 
