@@ -29,13 +29,17 @@
           <td><%= person.address.state %></td>
           <td><%= person.address.zip %></td>
         <% end %>
-        <% unless (person.children.empty?) %>
+        <td>
+        <% if (person.children.empty?) %>
+          &nbsp;
+        <% else %>
           <% child_names = Array.new %>
-          <% children.each do |child| %>
-            child_names << child.firstName
+          <% person.children.each do |child| %>
+            <% child_names << child.firstName %>
           <% end %>
-          <%= h(join(",", child_names)) %>
+          <%= h(child_names.join(",")) %>
         <% end %>
+        </td>
         <td><%= link_to 'Show', person %></td>
         <td><%= link_to 'Edit', edit_person_path(person) %></td>
         <td><%= link_to 'Destroy', person, method: :delete, data: { confirm: 'Are you sure?' } %></td>
@@ -43,6 +47,7 @@
     <% end %>
   </tbody>
 </table>
+
 
 <br>
 
