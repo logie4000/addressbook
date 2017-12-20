@@ -1,0 +1,11 @@
+var newRow = document.createElement('tr');
+newRow.innerHTML="<%= j( render :partial => 'child_row', :locals => {:child => Person.new()}) %>";
+
+var task_count = document.getElementsByClassName('child').length;
+var tasksTable = document.getElementById("children_table");
+var tableBody = tasksTable.getElementsByTagName("tbody")[0];
+
+console.log("Creating new Child row (" + task_count + ") for submission...");
+newRow.className = 'child'
+newRow.id = task_count;
+tableBody.appendChild(newRow);
