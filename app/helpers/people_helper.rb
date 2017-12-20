@@ -38,7 +38,7 @@ module PeopleHelper
       end
     end
       
-    return h("#{resident_names.join(",")}")
+    return h("#{resident_names.join(", ")}")
   end
     
   def add_child_link(text, person)
