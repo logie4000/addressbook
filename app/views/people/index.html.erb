@@ -19,37 +19,7 @@
 
   <tbody>
     <% @people.each do |person| %>
-      <tr>
-        <td><%= full_name(person) %></td>
-        <td><%= full_name(person.spouse) if (person.spouse) %></td>
-        <% if (person.address) %>
-          <td><%= person.address.street1 %></td>
-          <td><%= person.address.street2 %></td>
-          <td><%= person.address.city %></td>
-          <td><%= person.address.state %></td>
-          <td><%= person.address.zip %></td>
-        <% else %>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-        <% end %>
-        <td>
-        <% if (person.children.empty?) %>
-          &nbsp;
-        <% else %>
-          <% child_names = Array.new %>
-          <% person.children.each do |child| %>
-            <% child_names << child.firstName %>
-          <% end %>
-          <%= h(child_names.join(",")) %>
-        <% end %>
-        </td>
-        <td><%= link_to 'Show', person %></td>
-        <td><%= link_to 'Edit', edit_person_path(person) %></td>
-        <td><%= link_to 'Destroy', person, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-      </tr>
+      <%= render :partial => "person_row", :locals => {:person => person} %>
     <% end %>
   </tbody>
 </table>
