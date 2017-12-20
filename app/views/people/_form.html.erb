@@ -12,10 +12,12 @@
   <% end %>
   
   <div class="field">
-    <%= form.label :lastName %>
-    <%= form.text_field :lastName %>
     <%= form.label :firstName %>
     <%= form.text_field :firstName %>      
+    <%= form.label :lastName %>
+    <%= form.text_field :lastName %>
+    <%= form.label :suffix %>
+    <%= form.text_field :suffix %> 
   </div>
     
   <%= form.fields_for :address, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
