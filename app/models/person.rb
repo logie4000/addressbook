@@ -6,4 +6,5 @@ class Person < ApplicationRecord
   belongs_to :parent, :class_name => "Person", :optional => true
   
   accepts_nested_attributes_for :address, :allow_destroy => true, reject_if: :all_blank
+  accepts_nested_attributes_for :children, :allow_destroy => true, reject_if: :all_blank
 end
