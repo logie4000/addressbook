@@ -17,11 +17,13 @@ class PeopleController < ApplicationController
   def new
     @person = Person.new
     @spouse = @person.spouse
-	@address = @person.address
+    @address = @person.address
+    @children = @person.children
   end
 
   # GET /people/1/edit
   def edit
+    @person.children.build()
   end
 
   # POST /people
