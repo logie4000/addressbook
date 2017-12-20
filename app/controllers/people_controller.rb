@@ -36,6 +36,19 @@ class PeopleController < ApplicationController
 
     respond_to do |format|
       if @person.save
+        if (@person.spouse && @person.spouse.lastName == "")
+          @person.spouse.lastName = @person.lastName
+          @person.spouse.save
+        end
+        
+        unless (@person.children.empty?)
+          @person.children.each do |child|
+            if (child.lastName == "")
+              child.lastName = @person.lastName
+            end
+          end
+        end
+        
         format.html { redirect_to @person, notice: 'Person was successfully created.' }
         format.json { render :show, status: :created, location: @person }
       else
