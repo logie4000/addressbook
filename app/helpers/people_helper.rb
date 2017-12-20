@@ -15,6 +15,32 @@ module PeopleHelper
     return h(full_name)
   end
   
+  def resident_names(person)
+    resident_names = Array.new()
+    
+    if (person.spouse && person.lastName != person.spouse.lastName)
+      resident_names << full_name(person)
+      resident_names << full_name(person.spouse)
+    elsif (person.spouse)
+      resident_names << person.firstName
+      resident_names << person.spouse.firstName
+    else
+      resident_names << person.firstName
+    end
+    
+    unless (person.children.empty?)
+      person.children.each do |child|
+        if (child.lastName != person.lastName)
+          resident_names << full_name(child)
+        else
+          resident_names << child.firstName
+        end
+      end
+    end
+      
+    return h("#{resident_names.join("\n")}")
+  end
+    
   def add_child_link(text, person)
     if (person && person.id)
       link_to(text, add_child_person_path( person ), :remote => true, :method => :patch )
