@@ -1,6 +1,6 @@
 <tr>
   <td><%= link_to(person.lastName, person) %></td>
-  <td><%= resident_names(person) %></td>
+  <td><%= h("(#{resident_names(person)}") %></td>
   <% if (person.address) %>
     <td><%= person.address.street1 %></td>
     <td><%= person.address.street2 %></td>
@@ -22,7 +22,7 @@
     <% person.children.each do |child| %>
       <% child_names << child.firstName %>
     <% end %>
-    <%= h(child_names.join(",")) %>
+    <%= h(child_names.join(", ")) %>
   <% end %>
   </td>
   <td><%= link_to 'Edit', edit_person_path(person) %></td>
