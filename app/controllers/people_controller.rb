@@ -50,6 +50,7 @@ class PeopleController < ApplicationController
       if @person.update(person_params)
         if (@person.spouse)
           @person.spouse.address = @person.address
+          @person.spouse.save
         end
         
         format.html { redirect_to @person, notice: 'Person was successfully updated.' }
