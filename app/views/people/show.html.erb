@@ -1,7 +1,7 @@
 <p id="notice"><%= notice %></p>
 
 <p>
-  <h1><%= h(@person.lastName) %><%= h("/#{@spouse.lastName}") if @spouse %></h1>
+  <h1><%= h(@person.lastName) %><%= h("/#{@spouse.lastName}") if (@spouse && @spouse.lastName != @person.lastName) %></h1>
   <%= full_name(@person) %><%= h(" & #{full_name(@spouse)}") if @spouse %>
 <br>
   <%= h(@address.street1) %><br>
@@ -12,7 +12,7 @@
 </p>
 <% if (@children) %>
 <p>
-<strong>Chilren:</strong>
+<strong>Children:</strong>
   <% @children.each do |child| %>
     <% if (child.lastName != @person.lastName) %>
     <li><%= full_name(child) %><br>
