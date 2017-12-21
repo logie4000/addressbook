@@ -36,6 +36,11 @@ class PeopleController < ApplicationController
 
     respond_to do |format|
       if @person.save
+        if (@person.address.addressee.nil?)
+          @person.address.addressee = @person
+          @person.address.save
+        end
+        
         if (@person.spouse && @person.spouse.lastName == "")
           @person.spouse.lastName = @person.lastName
           @person.spouse.save
