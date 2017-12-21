@@ -15,6 +15,7 @@
 <span id="header-links">
   <% if session[:user_id] %>
   <% end %> | 
+  <%= link_to 'All Addresses', addresses_path %> | 
   <%= link_to 'New Address', new_person_path %> | 
 </span>
 
