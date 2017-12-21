@@ -1,8 +1,6 @@
 <tr>
   <% view_key = person.lastName %>
-  <% if (person.firstName == "The") %>
-    <% view_key = "The #{person.lastName}" %>
-  <% elsif (person.spouse && person.spouse.lastName != person.lastName) %>
+  <% if (person.spouse && person.spouse.lastName != person.lastName) %>
     <% view_key += "/person.spouse.lastName" %>
   <% end %>
   
