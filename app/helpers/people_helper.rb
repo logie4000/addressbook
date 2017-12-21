@@ -18,7 +18,7 @@ module PeopleHelper
   def resident_names(person)
     resident_names = Array.new()
     
-    if (person.firstName == "The")
+    if (person.firstName.blank?)
       return h("The #{person.lastName.pluralize}")
     elsif (person.spouse && person.lastName != person.spouse.lastName)
       resident_names << full_name(person)
