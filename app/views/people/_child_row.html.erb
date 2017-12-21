@@ -1,4 +1,4 @@
 <tr id="<%= h("child_new") %>" class="child">
- <td><%= text_field "person[children_attributes][#{(Time.now.to_f * 100000).to_i}][firstName]", "", :placeholder => Person.child_placeholder_value %></td>
- <td><%= text_field "person[children_attributes][#{(Time.now.to_f * 100000).to_i}][lastName]", "" %></td>
+ <td><%= text_field_tag "person[children_attributes][#{(Time.now.to_f * 100000).to_i}][firstName]", "", :placeholder => Person.child_placeholder_value %></td>
+ <td><%= text_field_tag "person[children_attributes][#{(Time.now.to_f * 100000).to_i}][lastName]", "" %></td>
 </tr>
