@@ -11,7 +11,7 @@
     </div>
   <% end %>
 
-  <%= form.fields_for :resident, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
+  <%= form.fields_for :addressee, :child_index =>  ->{ (Time.now.to_f * 1000000).to_i  } do |ff| %>
     <div class="field">
       <%= ff.label :lastName %>
       <%= ff.text_field :lastName %>
