@@ -13,12 +13,12 @@ class Person < ApplicationRecord
     return "New child"
   end
   
-  def validate_child(attributes)
+  def validate_child(child)
     # Returns true if the attributes are invalid
-    if (attributes[:firstName].blank? && attributes[:lastName].blank?)
+    if (child[:firstName].blank? && child[:lastName].blank?)
       Rails.logger.debug "Rejecting child because firstName and lastName are blank: #{child.inspect}"
       return true
-    elsif attributes[:firstName] == Person.child_placeholder_value
+    elsif child[:firstName] == Person.child_placeholder_value
       Rails.logger.debug "Rejecting child because firstName is the placeholder are blank: #{child.inspect}"
       return true
     else
