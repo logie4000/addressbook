@@ -50,6 +50,7 @@ class PeopleController < ApplicationController
           @person.children.each do |child|
             if (child.lastName == "")
               child.lastName = @person.lastName
+              child.save
             end
           end
         end
