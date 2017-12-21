@@ -7,5 +7,5 @@ class Person < ApplicationRecord
   
   accepts_nested_attributes_for :address, :allow_destroy => true, reject_if: :all_blank
   accepts_nested_attributes_for :spouse, :allow_destroy => true, reject_if: :all_blank
-  accepts_nested_attributes_for :children, :allow_destroy => true, reject_if: :all_blank
+  accepts_nested_attributes_for :children, :allow_destroy => true, reject_if: proc {|attributes| attributes[:firstName].blank? || attributes[:firstName] == Person.placeholder_text }
 end
