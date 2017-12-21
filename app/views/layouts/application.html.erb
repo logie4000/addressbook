@@ -9,6 +9,20 @@
   </head>
 
   <body>
-    <%= yield %>
+<div id="header">
+<span id="header-title">Address Book</span>
+
+<span id="header-links">
+  <% if session[:user_id] %>
+  <% end %> | 
+  <%= link_to 'New Address', new_person_path %> | 
+</span>
+
+</div>
+
+    <div id="content">
+      <%= yield %>
+    </div>
+
   </body>
 </html>
