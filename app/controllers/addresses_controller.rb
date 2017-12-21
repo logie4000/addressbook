@@ -15,8 +15,8 @@ class AddressesController < ApplicationController
   # GET /addresses/new
   def new
     @address = Address.new
-    @address.build_resident if (@address.resident.nil?)
-    @resident = @address.resident
+    @address.residents.build() if (@address.residents.empty?)
+    @residents = @address.residents
   end
 
   # GET /addresses/1/edit
@@ -73,6 +73,6 @@ class AddressesController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def address_params
-      params.require(:address).permit(:lastName, :firstName, :street1, :street2, :city, :state, :zip, :resident_attributes => [:id, :lastName, :firstName, :suffix, :_destroy])
+      params.require(:address).permit(:lastName, :firstName, :street1, :street2, :city, :state, :zip, :residents_attributes => [:id, :lastName, :firstName, :suffix, :_destroy])
     end
 end
