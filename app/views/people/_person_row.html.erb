@@ -1,5 +1,7 @@
 <tr>
-  <td><%= link_to(person.lastName, person) %></td>
+  <% view_key = person.lastName %>
+  <% view_key += "/person.spouse.lastName" if (person.spouse && person.spouse.lastName != person.lastName) %>
+  <td><%= link_to(view_key, person) %></td>
   <td><%= h("(#{resident_names(person)})") %></td>
   <% if (person.address) %>
     <td><%= person.address.street1 %></td>
