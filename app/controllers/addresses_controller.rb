@@ -4,7 +4,7 @@ class AddressesController < ApplicationController
   # GET /addresses
   # GET /addresses.json
   def index
-    @addresses = Address.find(:all, :include => [:addressee], :order => "addressee.lastName ASC")
+    @addresses = Address.includes(:addressee).order("people.lastName ASC")
   end
   
   # GET /addresses/1
