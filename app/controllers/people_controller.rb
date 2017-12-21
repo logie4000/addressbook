@@ -114,8 +114,8 @@ class PeopleController < ApplicationController
         @person = @person.parent
       end
       
-      if (@person != @person.address.resident)
-        @person = @person.address.resident
+      if (@person.address.addressee && @person != @person.address.addressee)
+        @person = @person.address.addressee
       end
     end
 
