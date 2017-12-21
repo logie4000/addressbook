@@ -70,6 +70,11 @@ class PeopleController < ApplicationController
     
     respond_to do |format|
       if @person.update(person_params)
+        if (@person.address.addressee.nil?)
+          @person.address.addressee = @person
+          @person.address.save
+        end
+        
         if (@person.spouse)
           @person.spouse.address = @person.address
           @person.spouse.spouse = @person
