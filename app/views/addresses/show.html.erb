@@ -1,8 +1,8 @@
 <p id="notice"><%= notice %></p>
 
 <p>
-  <% if (@address.resident) %>
-    <%= full_resident_name(@address.resident) %>
+  <% if (@address.addressee) %>
+    <%= full_resident_name(@address.addressee) %>
   <% end %>
 
   <%= h(@address.street1) %>
@@ -13,4 +13,4 @@
 </p>
 
 <%= link_to 'Edit', edit_address_path(@address) %> |
-<%= link_to 'Back', addresses_path %>
+<%= link_to 'Back To Addresses', addresses_path %>
