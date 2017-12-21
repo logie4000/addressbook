@@ -7,9 +7,20 @@ class Person < ApplicationRecord
   
   accepts_nested_attributes_for :address, :allow_destroy => true, reject_if: :all_blank
   accepts_nested_attributes_for :spouse, :allow_destroy => true, reject_if: :all_blank
-  accepts_nested_attributes_for :children, :allow_destroy => true, reject_if: proc {|attributes| (attributes[:firstName].blank? && attributes[:lastName].blank?) || attributes[:firstName] == Person.child_placeholder_value }
+  accepts_nested_attributes_for :children, :allow_destroy => true, reject_if: :validate_child
   
   def self.child_placeholder_value
     return "New child"
+  end
+  
+  def validate_child(attributes)
+    # Returns true if the attributes are invalid
+    if (attributes[:firstName].blank? && attributes[:lastName].blank?)
+      return true
+    elsif attributes[:firstName] == Person.child_placeholder_value
+      return true
+    else
+      return false
+    end
   end
 end
