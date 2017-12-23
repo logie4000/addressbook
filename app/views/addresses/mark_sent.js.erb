@@ -1,1 +1,1 @@
-document.getElementById("address_<%= @address.id %>").innerHTML="<%= j( render :partial => 'person_row', :locals => { :person => @address.addressee } ) %>";
+document.getElementById("address_<%= @address.id %>").innerHTML="<%= j( render :partial => 'people/person_row', :locals => { :person => @address.addressee } ) %>";
