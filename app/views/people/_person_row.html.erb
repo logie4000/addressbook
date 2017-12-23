@@ -12,6 +12,7 @@
     <td><%= person.address.city %></td>
     <td><%= person.address.state %></td>
     <td><%= person.address.zip %></td>
+    <td><%= h("Last sent: #{person.address.lastSent}") if (person.address.lastSent) %></td>  
   <% else %>
     <td>&nbsp;</td>
     <td>&nbsp;</td>
