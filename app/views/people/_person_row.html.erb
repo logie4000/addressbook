@@ -33,7 +33,7 @@
   </td>
   <td>
     <% if (person.address) %>
-      <%= link_to 'Mark Sent', mark_sent_address_path(person.address), :remote => true, :method => :patch) %>
+      <%= link_to('Mark Sent', mark_sent_address_path(person.address), :remote => true, :method => :patch) %>
     <% else %>
       &nbsp;
     <% end %>
