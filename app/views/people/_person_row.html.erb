@@ -31,6 +31,13 @@
     <%= h(child_names.join(", ")) %>
   <% end %>
   </td>
+  <td>
+    <% if (person.address) %>
+      <%= link_to 'Mark Sent', mark_sent_address_path(person.address), :remote => true, :method => :patch) %>
+    <% else %>
+      &nbsp;
+    <% end %>
+  </td>
   <td><%= link_to 'Edit', edit_person_path(person) %></td>
   <td><%= link_to 'Destroy', person, method: :delete, data: { confirm: 'Are you sure?' } %></td>
 </tr>
