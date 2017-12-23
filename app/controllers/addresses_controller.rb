@@ -65,6 +65,18 @@ class AddressesController < ApplicationController
     end
   end
 
+  def mark_sent
+    @address = Address.find(id)
+    @address.lastSent = Date.today.year.to_s
+    respond_to do |format|
+      if (@address.save)
+        format.js
+      else
+        format.ja
+      end
+    end
+  end
+      
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_address
