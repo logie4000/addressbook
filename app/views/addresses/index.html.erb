@@ -9,8 +9,10 @@
   </thead>
 
   <tbody>
+    <% row_id = 0 %>
     <% @addresses.each do |address| %>
-      <%= render :partial => "people/person_row", :locals => {:person => address.addressee} %>
+      <%= render :partial => "people/person_row", :locals => {:person => address.addressee, :row_id => row_id} %>
+      <% row_id += 1 %>
     <% end %>
   </tbody>
 </table>
