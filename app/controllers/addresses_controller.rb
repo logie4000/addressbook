@@ -66,7 +66,7 @@ class AddressesController < ApplicationController
   end
 
   def mark_sent
-    @address = Address.find(id)
+    @address = Address.find(params[:id])
     @address.lastSent = Date.today.year.to_s
     respond_to do |format|
       if (@address.save)
