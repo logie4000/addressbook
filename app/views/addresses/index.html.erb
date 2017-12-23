@@ -11,7 +11,9 @@
   <tbody>
     <% row_id = 0 %>
     <% @addresses.each do |address| %>
-      <%= render :partial => "people/person_row", :locals => {:person => address.addressee, :row_id => row_id} %>
+      <div id="addressee_<%= address.addressee.id %>">
+        <%= render :partial => "people/person_row", :locals => {:person => address.addressee} %>
+      </div>
       <% row_id += 1 %>
     <% end %>
   </tbody>
