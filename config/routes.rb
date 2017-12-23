@@ -1,5 +1,10 @@
 Rails.application.routes.draw do
-  resources :addresses
+  resources :addresses do
+    member do
+      patch :mark_sent
+    end
+  end
+  
   resources :people do
     collection do
       get :add_child_row
