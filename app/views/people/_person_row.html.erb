@@ -1,4 +1,4 @@
-<tr id="<%= h("#{row_id}") %>">
+<tr>
   <% view_key = person.lastName %>
   <% if (person.spouse && person.spouse.lastName != person.lastName) %>
     <% view_key += "/#{person.spouse.lastName}" %>
