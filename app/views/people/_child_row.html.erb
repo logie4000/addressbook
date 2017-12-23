@@ -1,5 +1,5 @@
 <tr id="<%= h("child_new") %>" class="child">
- <% child_id = (Time.now.to_f * 100000).to_i
+ <% child_id = (Time.now.to_f * 100000).to_i %>
  <td><%= text_field_tag "person[children_attributes][#{child_id}][firstName]", "", :placeholder => Person.child_placeholder_value %></td>
  <td><%= text_field_tag "person[children_attributes][#{child_id}][lastName]", "" %></td>
 </tr>
