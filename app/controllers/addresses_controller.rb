@@ -72,7 +72,7 @@ class AddressesController < ApplicationController
       if (@address.save)
         format.js
       else
-        format.ja
+        format.js
       end
     end
   end
