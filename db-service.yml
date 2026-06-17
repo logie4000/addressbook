@@ -3,7 +3,7 @@ services:
     build:
       context: ./database
       dockerfile: Dockerfile.mysql
-    image: "address_book.mysql:latest"
+    image: "teapothill.mysql:latest"
     volumes:
       - "teapothill_volume:/data"
       - "/var/www:/var/www"
