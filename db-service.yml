@@ -1,9 +1,10 @@
 services:
   db:
     build:
-      context: ./database
+      context: ./db
       dockerfile: Dockerfile.mysql
     image: "teapothill.mysql:latest"
+    container_name: teapothill-db
     volumes:
       - "teapothill_volume:/data"
       - "/var/www:/var/www"
