@@ -1,4 +1,4 @@
 export const environment = {
-  baseHref: 'development',
+  baseHref: 'addressbook',
   appTitle: 'ADDRESS BOOK DEVELOPMENT',
 };
