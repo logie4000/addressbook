@@ -46,6 +46,7 @@
               "outputHashing": "all"
             },
             "development": {
+              "baseHref": "/addressbook/",
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true,
