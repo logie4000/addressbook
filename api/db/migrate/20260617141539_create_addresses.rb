@@ -1,6 +1,6 @@
 class CreateAddresses < ActiveRecord::Migration[8.1]
   def change
-    create_table :addresses do |t|
+    create_table :addresses, if_not_exists: true  do |t|
       t.string :street1
       t.string :street2
       t.string :city
