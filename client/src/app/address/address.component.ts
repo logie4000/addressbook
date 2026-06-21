@@ -4,7 +4,6 @@ import { Address, fullCityStateZip, fullStreetAddress } from '../models/address'
 
 @Component({
   selector: 'app-address',
-  standalone: true,
   imports: [],
   templateUrl: './address.component.html',
   styleUrl: './address.component.css'

@@ -4,7 +4,6 @@ import { ModelService } from '../models/model.service';
 
 @Component({
   selector: 'app-model-list',
-  standalone: true,
   imports: [],
   templateUrl: './model-list.component.html',
   styleUrl: './model-list.component.css'

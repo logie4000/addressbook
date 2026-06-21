@@ -5,7 +5,6 @@ import { fullCityStateZip } from '../models/address';
 
 @Component({
   selector: 'app-person',
-  standalone: true,
   imports: [],
   templateUrl: './person.component.html',
   styleUrl: './person.component.css'

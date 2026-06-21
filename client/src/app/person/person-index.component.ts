@@ -5,7 +5,6 @@ import { Person } from '../models/person';
 
 @Component({
   selector: 'app-person-index',
-  standalone: true,
   imports: [],
   templateUrl: './person-index.component.html',
   styleUrl: './person-index.component.css'

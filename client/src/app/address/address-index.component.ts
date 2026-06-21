@@ -5,7 +5,6 @@ import { AddressService } from '../models/address.service';
 
 @Component({
   selector: 'app-address-index',
-  standalone: true,
   imports: [],
   templateUrl: './address-index.component.html',
   styleUrl: './address-index.component.css'

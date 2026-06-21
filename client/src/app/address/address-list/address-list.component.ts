@@ -6,7 +6,6 @@ import { Address, fullCityStateZip, fullStreetAddress } from '../../models/addre
 
 @Component({
   selector: 'app-address-list',
-  standalone: true,
   imports: [],
   templateUrl: './address-list.component.html',
   styleUrl: './address-list.component.css'

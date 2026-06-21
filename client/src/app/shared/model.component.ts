@@ -5,7 +5,6 @@ import { ModelService } from '../models/model.service';
 
 @Component({
     selector: 'app-model',
-    standalone: true,
     imports: [],
     template: '',
     styleUrls: []
