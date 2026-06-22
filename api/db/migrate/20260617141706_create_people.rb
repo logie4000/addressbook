@@ -1,6 +1,6 @@
 class CreatePeople < ActiveRecord::Migration[8.1]
   def change
-    create_table :people do |t|
+    create_table :people, if_not_exists: true  do |t|
       t.string :lastName
       t.string :firstName
       t.references :address, index: true, foreign_key: true
