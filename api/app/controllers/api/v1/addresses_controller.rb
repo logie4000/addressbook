@@ -5,7 +5,7 @@ class Api::V1::AddressesController < ApplicationController
   def index
     @addresses = Address.select(:id, :street1, :street2, :city, :state, :zip, :addressee_id).order("people.lastName ASC").includes(:addressee)
 
-    render json: @addresses, include: [ :addressee ]
+    render json: @addresses, include: [ {:addressee => { include: [ :id, :first_name, :last_name ] }} ]
   end
 
   # GET /addresses/1
