@@ -3,14 +3,14 @@ class Api::V1::AddressesController < ApplicationController
 
   # GET /addresses
   def index
-    @addresses = Address.includes(:addressee).order("people.lastName ASC")
+    @addresses = Address.select(:id, :street1, :street2, :city, :state, :zip).includes(:addressee).order("people.lastName ASC")
 
     render json: @addresses
   end
 
   # GET /addresses/1
   def show
-    render json: @address
+    render json: @address, include: [ :addressee ]
   end
 
   # POST /addresses
