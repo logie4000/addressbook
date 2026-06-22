@@ -8,7 +8,7 @@ import { ModelService } from '../models/model.service';
   template: '',
   styleUrls: []
 })
-export class ModelIndexComponent<Model> {
+export abstract class ModelIndexComponent<Model> {
     loadComponentResource = httpResource<Model[]>( () => {
       return `${this.modelService.endpointUrl}`
     });

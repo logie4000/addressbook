@@ -5,8 +5,8 @@ import { ModelService } from '../models/model.service';
 @Component({
   selector: 'app-model-list',
   imports: [],
-  templateUrl: './model-list.component.html',
-  styleUrl: './model-list.component.css'
+  template: '',
+  styleUrls: []
 })
 export abstract class ModelListComponent<Model> {
   itemList = input<Model[] | undefined>([]);

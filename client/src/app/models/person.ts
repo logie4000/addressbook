@@ -5,8 +5,8 @@ export interface Person {
   lastName: string,
   firstName: string,
   address_id: number,
-  parent: Person,
-  spouse: Person,
+  parent: Person | undefined,
+  spouse: Person | undefined,
   suffix: string,
-  address: Address,
+  address: Address | undefined,
 }

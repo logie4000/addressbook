@@ -9,7 +9,7 @@ import { ModelService } from '../models/model.service';
     template: '',
     styleUrls: []
 })
-export class ModelComponent<Model> {
+export abstract class ModelComponent<Model> {
     id = signal<number>(0);
     endpointUrl: string = '';
   

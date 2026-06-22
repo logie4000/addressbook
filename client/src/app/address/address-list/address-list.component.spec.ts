@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AddressListComponent } from './address-list.component';
+import { AddressService } from '../../models/address.service';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('AddressListComponent', () => {
   let component: AddressListComponent;
@@ -8,9 +11,12 @@ describe('AddressListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [
+          provideHttpClient(),
+          provideHttpClientTesting(),
+      ],
       imports: [AddressListComponent]
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(AddressListComponent);
     component = fixture.componentInstance;
@@ -21,3 +27,4 @@ describe('AddressListComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+

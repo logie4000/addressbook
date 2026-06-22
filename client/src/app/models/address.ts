@@ -9,7 +9,7 @@ export interface Address {
   zip: string,
   comments: string,
   lastSent: string,
-  addressee: Person
+  addressee: Person | undefined,
 }
 
 export function fullStreetAddress (address: Address) {
