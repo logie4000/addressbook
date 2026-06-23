@@ -6,11 +6,13 @@
     {{ city_state_zip() }}
   </div>
 
-  @if( model()?.addressee?.children ) {
+  @if( showChildren() ) {
+  <p>
     <div id="children">
       <strong>Children:</strong><br>
       @for(child of child_units(); track child) {
         {{ child.firstName }} {{ child.lastName }}<br>
       }
     </div>
-  }
+}
+  

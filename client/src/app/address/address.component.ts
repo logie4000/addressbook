@@ -3,6 +3,7 @@ import { ModelComponent } from '../shared/model.component';
 import { Address, fullCityStateZip, fullStreetAddress } from '../models/address';
 import { ActivatedRoute } from '@angular/router';
 import { AddressService } from '../models/address.service';
+import { Person } from '../models/person';
 
 @Component({
   selector: 'app-address',
@@ -45,7 +46,7 @@ export class AddressComponent extends ModelComponent<Address>{
       ret_val = `${addressee.firstName} ${addressee.lastName}`;
 
       if (addressee.spouse) {
-        ret_val += ` ${addressee.spouse.firstName} ${addressee.spouse.lastName} `
+        ret_val += ` & ${addressee.spouse.firstName} ${addressee.spouse.lastName} `
       }
     }
 
@@ -78,7 +79,12 @@ export class AddressComponent extends ModelComponent<Address>{
     }
   })
 
-  child_units = computed(() => {
+  showChildren = computed(() => {
+    var children = this.child_units();
+    return children.length > 0;
+  })
+
+  child_units = computed<Person[]>(() => {
     var address = this.model();
     if (address && address.addressee?.children) {
       var children = address.addressee?.children
