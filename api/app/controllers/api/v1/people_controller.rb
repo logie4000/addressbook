@@ -18,7 +18,8 @@ class Api::V1::PeopleController < ApplicationController
       @children = @spouse.children
     end
 
-    person_hash = @person.as_json.merge({children: @children, address: @address})
+    sliced_children = @children.map { |child| child.slice(:id, :firstName, :lastName)}
+    person_hash = @person.as_json.merge({children: sliced_children, address: @address.slice(:street1, :street2, :city, :state, :zip)})
     render json: person_hash
   end
 
