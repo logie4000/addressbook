@@ -1,6 +1,8 @@
 import { Component, computed } from '@angular/core';
 import { ModelComponent } from '../shared/model.component';
 import { Address, fullCityStateZip, fullStreetAddress } from '../models/address';
+import { ActivatedRoute } from '@angular/router';
+import { AddressService } from '../models/address.service';
 
 @Component({
   selector: 'app-address',
@@ -10,6 +12,10 @@ import { Address, fullCityStateZip, fullStreetAddress } from '../models/address'
 })
 export class AddressComponent extends ModelComponent<Address>{
 
+  constructor(activatatedRoute: ActivatedRoute, modelService: AddressService) {
+    super(activatatedRoute, modelService);
+  }
+  
   full_resident_name = computed(() => {
     if (this.isLoading()) {
       return "Loading...";
