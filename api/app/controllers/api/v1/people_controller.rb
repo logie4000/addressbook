@@ -3,9 +3,9 @@ class Api::V1::PeopleController < ApplicationController
 
   # GET /people
   def index
-    @people = Person.select(:id, :firstName, :lastName, :spouse_id, :address_id).order(:lastName).include(:spouse, :children)
+    @people = Person.select(:id, :firstName, :lastName, :spouse_id, :address_id).order(:lastName).includes(:spouse, :children)
 
-    render json: @people,    include: [ {:spouse    => { only: [:id, :firstName, :lastName] }, :children  => { only: [:id, :firstName, :lastName] }}]
+    render json: @people, include: [ {:spouse => { only: [:id, :firstName, :lastName] }, :children  => { only: [:id, :firstName, :lastName] }}]
   end
 
   # GET /people/1
