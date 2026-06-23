@@ -7,6 +7,7 @@
   <tbody>
     @for(address of itemList(); track address) {
       <tr (click)="onRowClick(address)">
+        <td>{{ getResident(address) }}</td>
         <td>{{ getStreetAddress(address) }}</td>
         <td>{{ getCityStateZip(address) }}</td>
       </tr>
