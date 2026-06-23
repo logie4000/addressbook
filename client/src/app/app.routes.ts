@@ -10,7 +10,7 @@ export const routes: Routes = [
     component: AddressIndexComponent,
   },
   {
-    path: 'addresses:id',
+    path: 'addresses/:id',
     component: AddressComponent,
   },
   {
@@ -18,7 +18,7 @@ export const routes: Routes = [
     component: PersonIndexComponent,
   },
   {
-    path: 'people:id',
+    path: 'people/:id',
     component: PersonComponent,
   }
 ];

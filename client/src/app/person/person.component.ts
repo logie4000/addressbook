@@ -2,6 +2,8 @@ import { Component, computed } from '@angular/core';
 import { ModelComponent } from '../shared/model.component';
 import { Person } from '../models/person';
 import { fullCityStateZip } from '../models/address';
+import { ActivatedRoute } from '@angular/router';
+import { PersonService } from '../models/person.service';
 
 @Component({
   selector: 'app-person',
@@ -11,6 +13,10 @@ import { fullCityStateZip } from '../models/address';
 })
 export class PersonComponent extends ModelComponent<Person> {
 
+  constructor(activatatedRoute: ActivatedRoute, modelService: PersonService) {
+    super(activatatedRoute, modelService);
+  }
+  
   title = computed(() => {
     var person = this.model();
 
