@@ -18,8 +18,10 @@ export class AddressListComponent extends ModelListComponent<Address> {
   getResident(address: Address) {
     var ret_val = `${address.addressee?.lastName}`
 
-    if (address.addressee?.spouse?.lastName != address.addressee?.lastName) {
-      ret_val += ` / ${address.addressee?.spouse?.lastName}`
+    if (address.addressee?.spouse) {
+      if (address.addressee?.spouse.lastName != address.addressee.lastName) {
+        ret_val += ` / ${address.addressee?.spouse?.lastName}`
+      }
     }
 
     return ret_val;
