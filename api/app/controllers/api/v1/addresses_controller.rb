@@ -10,7 +10,16 @@ class Api::V1::AddressesController < ApplicationController
 
   # GET /addresses/1
   def show
-    render json: @address, include: [ {:addressee => { include: {:spouse => { only: [ :id, :firstName, :lastName ] }}, only: [ :id, :firstName, :lastName ] }} ]
+    @person = @address.addressee
+
+    render json: @address, include: [
+                    {:addressee => {include: {
+                          :spouse => { only: [ :id, :firstName, :lastName ] },
+                          :children => { only: [ :id, :firstName, :lastName ] },
+                        },
+                        only: [ :id, :firstName, :lastName ]
+                      }
+                    }]
   end
 
   # POST /addresses
