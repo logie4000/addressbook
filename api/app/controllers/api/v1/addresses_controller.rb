@@ -5,12 +5,12 @@ class Api::V1::AddressesController < ApplicationController
   def index
     @addresses = Address.select(:id, :street1, :street2, :city, :state, :zip, :addressee_id).order("people.lastName ASC").includes(:addressee)
 
-    render json: @addresses, include: [ {:addressee => { only: [ :id, :first_name, :last_name ] }} ]
+    render json: @addresses, include: [ {:addressee => { include: {:spouse => { only: [ :id, :firstName, :lastName ] }}, only: [ :id, :firstName, :lastName ] }} ]
   end
 
   # GET /addresses/1
   def show
-    render json: @address, include: [ :addressee ]
+    render json: @address, include: [ {:addressee => { include: {:spouse => { only: [ :id, :firstName, :lastName ] }}, only: [ :id, :firstName, :lastName ] }} ]
   end
 
   # POST /addresses
