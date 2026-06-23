@@ -4,3 +4,12 @@
     {{ street_address() }}<br>
     {{ city_state_zip() }}
   </div>
+
+  @if( model()?.addressee?.children ) {
+    <div id="children">
+      <strong>Children:</strong>
+      @for(child of child_units(); track child) {
+        {{ child.firstName }} {{ child.lastName }}<br>
+      }
+    </div>
+  }
