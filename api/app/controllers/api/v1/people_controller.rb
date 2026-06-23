@@ -18,7 +18,8 @@ class Api::V1::PeopleController < ApplicationController
       @children = @spouse.children
     end
 
-    render json: @person
+    person_hash = @person.as_json.merge({children: @children, address: @address})
+    render json: person_hash
   end
 
   # POST /people
