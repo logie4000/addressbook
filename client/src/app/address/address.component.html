@@ -1,6 +1,20 @@
+<app-back-button />
+
 <p>
-  <div id="title">{{ full_resident_name() }}</div>
+  <h1>{{ title() }}</h1>
+  <div id="resident">{{ full_resident_name() }}</div>
   <div id="address">
     {{ street_address() }}<br>
     {{ city_state_zip() }}
   </div>
+
+  @if( showChildren() ) {
+  <p>
+    <div id="children">
+      <strong>Children:</strong><br>
+      @for(child of child_units(); track child) {
+        {{ child.firstName }} {{ child.lastName }}<br>
+      }
+    </div>
+}
+  

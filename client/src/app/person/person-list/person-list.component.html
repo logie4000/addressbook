@@ -1,0 +1,23 @@
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Spouse</th>
+      <th>Children</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (person of itemList(); track person) {
+      <tr>
+        <td>{{ person.firstName }} {{ person.lastName }}</td>
+        @if (person.spouse) {
+          <td>{{ person.spouse.firstName }} {{ person.spouse.lastName }}</td>
+        } @else {
+          <td>&nbsp;</td>
+        }
+        <td>&nbsp;</td>
+      </tr>
+    }
+  </tbody>
+</table>
