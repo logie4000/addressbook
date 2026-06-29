@@ -4,10 +4,11 @@ import { Address, fullCityStateZip, fullStreetAddress } from '../models/address'
 import { ActivatedRoute } from '@angular/router';
 import { AddressService } from '../models/address.service';
 import { Person } from '../models/person';
+import { BackButtonComponent } from "../shared/back-button.component";
 
 @Component({
   selector: 'app-address',
-  imports: [],
+  imports: [BackButtonComponent],
   templateUrl: './address.component.html',
   styleUrl: './address.component.css'
 })
