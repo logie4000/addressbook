@@ -46,3 +46,9 @@ The tests need DynamoDB Local on port 8000 (or `DYNAMODB_ENDPOINT` set):
 docker run -d -p 8000:8000 amazon/dynamodb-local:2.6.1
 bin/rails test
 ```
+
+## Deploying to AWS
+
+In production the API runs in AWS Lambda (via the [Lamby](https://lamby.cloud)
+gem and `Dockerfile.lambda`), deployed with AWS SAM from the repository root.
+See [docs/deploy-aws.md](../docs/deploy-aws.md).

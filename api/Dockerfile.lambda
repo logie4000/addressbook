@@ -1,0 +1,44 @@
+# syntax=docker/dockerfile:1
+# Container image for running the API in AWS Lambda. Built by `sam build`
+# (see template.yaml at the repository root); not used by docker-compose.
+#
+# It starts from AWS's own Lambda Ruby image, which already contains the
+# Lambda runtime client, so Lambda can call config/lambda.rb directly.
+
+FROM public.ecr.aws/lambda/ruby:3.4 AS build
+
+# Compilers and headers for gems with native extensions (bootsnap, psych, ...)
+RUN dnf install -y gcc gcc-c++ make libyaml-devel git && dnf clean all
+
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+ENV RAILS_ENV="production" \
+    BUNDLE_DEPLOYMENT="1" \
+    BUNDLE_PATH="/var/task/vendor/bundle" \
+    BUNDLE_WITHOUT="development:test"
+
+COPY Gemfile Gemfile.lock ./
+RUN bundle install && \
+    rm -rf "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git
+
+COPY . .
+
+# Lambda's file system is read-only apart from /tmp, so build bootsnap's cache
+# now and only read it at runtime (BOOTSNAP_READONLY below).
+RUN bundle exec bootsnap precompile --gemfile app/ lib/ config/
+
+
+FROM public.ecr.aws/lambda/ruby:3.4
+
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+ENV RAILS_ENV="production" \
+    BUNDLE_DEPLOYMENT="1" \
+    BUNDLE_PATH="/var/task/vendor/bundle" \
+    BUNDLE_WITHOUT="development:test" \
+    BOOTSNAP_READONLY="1"
+
+COPY --from=build ${LAMBDA_TASK_ROOT} ${LAMBDA_TASK_ROOT}
+
+# "file.Module.method": load config/lambda.rb, then call Lamby.cmd per request.
+CMD ["config/lambda.Lamby.cmd"]

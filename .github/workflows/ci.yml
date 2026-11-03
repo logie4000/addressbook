@@ -81,3 +81,15 @@ jobs:
           RAILS_ENV: test
           DYNAMODB_ENDPOINT: http://localhost:8000
         run: bin/rails test
+
+  template:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Lint the AWS SAM template
+        run: pipx run cfn-lint template.yaml

@@ -1,0 +1,16 @@
+# Defaults for `sam build` and `sam deploy`, so both work with no flags.
+# See docs/deploy-aws.md.
+version = 0.1
+
+[default.global.parameters]
+stack_name = "addressbook-production"
+
+[default.build.parameters]
+cached = true
+
+[default.deploy.parameters]
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+resolve_image_repos = true
+confirm_changeset = true
+parameter_overrides = "StageName=\"production\" SecretKeyBaseParameter=\"/addressbook/production/SECRET_KEY_BASE\""
