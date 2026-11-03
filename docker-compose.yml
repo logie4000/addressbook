@@ -1,7 +1,17 @@
-include:
-  - db-service.yml
-
 services:
+  # Local stand-in for Amazon DynamoDB. Data is kept in the
+  # addressbook_dynamodb volume between restarts.
+  dynamodb:
+    image: "amazon/dynamodb-local:2.6.1"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data"
+    user: root
+    volumes:
+      - "addressbook_dynamodb:/home/dynamodblocal/data"
+    ports:
+      - "8000:8000"
+    networks:
+      - teapothill
+
   api:
     build:
       context: ./api
@@ -16,9 +26,9 @@ services:
         required: true
     environment:
       - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+      - DYNAMODB_ENDPOINT=http://dynamodb:8000
     depends_on:
-     db:
-       condition: service_healthy
+      - dynamodb
 
   client:
     build: 
@@ -30,11 +40,10 @@ services:
     networks: 
       - teapothill
     depends_on:
-      - db
+      - api
 
 volumes:
-  teapothill_volume:
-    external: true
+  addressbook_dynamodb:
 
 networks:
   teapothill:

@@ -1,8 +1,9 @@
 #!/bin/bash -e
 
-# If running the rails server then create or migrate existing database
-if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
-  ./bin/rails db:prepare
+# If running the rails server against a local DynamoDB, create any missing tables.
+# (On AWS the tables are created by the infrastructure template instead.)
+if [ -n "${DYNAMODB_ENDPOINT}" ] && [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+  ./bin/rails dynamodb:create_tables
 fi
 
 exec "${@}"

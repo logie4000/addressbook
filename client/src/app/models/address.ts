@@ -1,7 +1,7 @@
 import { Person } from "./person";
 
 export interface Address {
-  id: number,
+  id: string,
   street1: string,
   street2: string,
   city: string,

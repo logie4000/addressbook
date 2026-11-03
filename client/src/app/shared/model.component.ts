@@ -10,18 +10,19 @@ import { ModelService } from '../models/model.service';
     styleUrls: []
 })
 export abstract class ModelComponent<Model> {
-    id = signal<number>(0);
+    // Record ids are DynamoDB-generated UUID strings.
+    id = signal<string>('');
     endpointUrl: string = '';
   
     params$ = this.activatedRoute.params.subscribe( (params) => {
-      var id = parseInt(params['id']);
-      if (!Number.isNaN(id)) {
+      var id = params['id'];
+      if (id) {
         this.id.set(id);
       }
     })
   
     loadResource = httpResource<Model>( () => {
-      if (this.id() == 0) {
+      if (!this.id()) {
         return undefined;
       }
   
