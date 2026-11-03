@@ -5,6 +5,11 @@ on:
   push:
     branches: [ main ]
 
+# The Rails API lives in api/, so every job runs from there.
+defaults:
+  run:
+    working-directory: api
+
 jobs:
   scan_ruby:
     runs-on: ubuntu-latest
@@ -16,6 +21,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
+          working-directory: api
           bundler-cache: true
 
       - name: Scan for common Rails security vulnerabilities using static analysis
@@ -35,14 +41,15 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
+          working-directory: api
           bundler-cache: true
 
       - name: Prepare RuboCop cache
         uses: actions/cache@v4
         env:
-          DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', '**/.rubocop_todo.yml', 'Gemfile.lock') }}
+          DEPENDENCIES_HASH: ${{ hashFiles('api/.ruby-version', 'api/**/.rubocop.yml', 'api/**/.rubocop_todo.yml', 'api/Gemfile.lock') }}
         with:
-          path: ${{ env.RUBOCOP_CACHE_ROOT }}
+          path: api/${{ env.RUBOCOP_CACHE_ROOT }}
           key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
           restore-keys: |
             rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
@@ -53,12 +60,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # services:
-    #  redis:
-    #    image: valkey/valkey:8
-    #    ports:
-    #      - 6379:6379
-    #    options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+    services:
+      dynamodb:
+        image: amazon/dynamodb-local:2.6.1
+        ports:
+          - 8000:8000
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -66,11 +73,11 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
+          working-directory: api
           bundler-cache: true
 
       - name: Run tests
         env:
           RAILS_ENV: test
-          # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-          # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test
+          DYNAMODB_ENDPOINT: http://localhost:8000
+        run: bin/rails test

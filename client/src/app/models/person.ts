@@ -1,7 +1,7 @@
 import { Address } from "./address";
 
 export interface Person {
-  id: number,
+  id: string,
   lastName: string,
   firstName: string,
   parent: Person | undefined,

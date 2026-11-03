@@ -1,25 +1,37 @@
 class Api::V1::AddressesController < ApplicationController
   before_action :set_address, only: %i[ show update destroy ]
 
-  # GET /addresses
-  def index
-    @addresses = Address.select(:id, :street1, :street2, :city, :state, :zip, :addressee_id).order("people.lastName ASC").includes(:addressee)
+  INDEX_FIELDS = %w[ id street1 street2 city state zip addressee_id ].freeze
 
-    render json: @addresses, include: [ {:addressee => { include: {:spouse => { only: [ :id, :firstName, :lastName ] }}, only: [ :id, :firstName, :lastName ] }} ]
+  # GET /addresses
+  #
+  # Reads both tables once and joins them in memory, rather than making a
+  # DynamoDB request per address.
+  def index
+    people = Person.all.index_by(&:id)
+
+    addresses = Address.all.map do |address|
+      addressee = people[address.addressee_id]
+      spouse = addressee && people[addressee.spouse_id]
+
+      address.attributes.stringify_keys.slice(*INDEX_FIELDS).merge(
+        "addressee" => addressee && name_fields(addressee).merge("spouse" => spouse && name_fields(spouse))
+      )
+    end
+
+    render json: addresses.sort_by { |a| a.dig("addressee", "lastName").to_s }
   end
 
   # GET /addresses/1
   def show
-    @person = @address.addressee
+    addressee = @address.addressee
 
-    render json: @address, include: [
-                    {:addressee => {include: {
-                          :spouse => { only: [ :id, :firstName, :lastName ] },
-                          :children => { only: [ :id, :firstName, :lastName ] },
-                        },
-                        only: [ :id, :firstName, :lastName ]
-                      }
-                    }]
+    render json: @address.as_json.merge(
+      "addressee" => addressee && name_fields(addressee).merge(
+        "spouse" => addressee.spouse && name_fields(addressee.spouse),
+        "children" => addressee.children.map { |child| name_fields(child) }
+      )
+    )
   end
 
   # POST /addresses
@@ -27,7 +39,7 @@ class Api::V1::AddressesController < ApplicationController
     @address = Address.new(address_params)
 
     if @address.save
-      render json: @address, status: :created, location: @address
+      render json: @address, status: :created, location: api_v1_address_url(@address)
     else
       render json: @address.errors, status: :unprocessable_content
     end
@@ -35,7 +47,9 @@ class Api::V1::AddressesController < ApplicationController
 
   # PATCH/PUT /addresses/1
   def update
-    if @address.update(address_params)
+    @address.assign_attributes(address_params)
+
+    if @address.save
       render json: @address
     else
       render json: @address.errors, status: :unprocessable_content
@@ -50,12 +64,11 @@ class Api::V1::AddressesController < ApplicationController
   def mark_sent
     @address = Address.find(params[:id])
     @address.lastSent = Date.today.year.to_s
-    respond_to do |format|
-      if (@address.save)
-        render json: @address
-      else
-        render json: @address.errors, status: :unprocessable_content
-      end
+
+    if @address.save
+      render json: @address
+    else
+      render json: @address.errors, status: :unprocessable_content
     end
   end
 
@@ -68,5 +81,9 @@ class Api::V1::AddressesController < ApplicationController
     # Only allow a list of trusted parameters through.
     def address_params
       params.expect(address: [ :street1, :street2, :city, :state, :zip, :comments ])
+    end
+
+    def name_fields(person)
+      { "id" => person.id, "firstName" => person.firstName, "lastName" => person.lastName }
     end
 end

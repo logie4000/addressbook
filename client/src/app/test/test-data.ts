@@ -2,7 +2,7 @@ import { Address } from "../models/address";
 import { Person } from "../models/person";
 
 export const ADDRESS_1: Address = {
-  id: 1,
+  id: "1",
   street1: "",
   street2: "",
   city: "",
@@ -11,10 +11,10 @@ export const ADDRESS_1: Address = {
   comments: "",
   lastSent: "",
   addressee: {
-    id: 0,
+    id: "",
     lastName: "",
     firstName: "",
-    address_id: 0,
+    children: [],
     parent: undefined,
     spouse: undefined,
     suffix: "",
@@ -23,7 +23,7 @@ export const ADDRESS_1: Address = {
 };
 
 export const ADDRESS_2: Address = {
-  id: 2,
+  id: "2",
   street1: "",
   street2: "",
   city: "",
@@ -32,10 +32,10 @@ export const ADDRESS_2: Address = {
   comments: "",
   lastSent: "",
   addressee: {
-    id: 0,
+    id: "",
     lastName: "",
     firstName: "",
-    address_id: 0,
+    children: [],
     parent: undefined,
     spouse: undefined,
     suffix: "",
@@ -44,10 +44,10 @@ export const ADDRESS_2: Address = {
 };
 
 export const PERSON_1: Person = {
-  id: 1,
+  id: "1",
   lastName: "",
   firstName: "",
-  address_id: 0,
+  children: [],
   parent: undefined,
   spouse: undefined,
   suffix: "",

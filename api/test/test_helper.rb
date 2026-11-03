@@ -1,15 +1,27 @@
 ENV["RAILS_ENV"] ||= "test"
+# Tests run against DynamoDB Local (see the README). Override to point elsewhere.
+ENV["DYNAMODB_ENDPOINT"] ||= "http://localhost:8000"
+
 require_relative "../config/environment"
 require "rails/test_help"
 
+# Create the test tables once per run, if they don't exist yet.
+Rails.application.eager_load!
+existing_tables = Dynamoid.adapter.list_tables
+Dynamoid.included_models.each do |model|
+  model.create_table(sync: true) unless existing_tables.include?(model.table_name)
+end
+
 module ActiveSupport
   class TestCase
-    # Run tests in parallel with specified workers
-    parallelize(workers: :number_of_processors)
+    # The tests share one set of DynamoDB tables, so run them one at a time.
+    parallelize(workers: 1)
 
-    # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
-    fixtures :all
-
-    # Add more helper methods to be used by all tests here...
+    # Start every test with empty tables.
+    setup do
+      Dynamoid.included_models.each do |model|
+        model.all.each(&:delete)
+      end
+    end
   end
 end

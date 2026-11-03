@@ -1,6 +1,12 @@
 require_relative "boot"
 
-require "rails/all"
+require "rails"
+# Pick only the frameworks this API uses. Active Record is gone: data lives in
+# Amazon DynamoDB through Dynamoid (see config/initializers/dynamoid.rb).
+require "active_model/railtie"
+require "active_job/railtie"
+require "action_controller/railtie"
+require "rails/test_unit/railtie"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
