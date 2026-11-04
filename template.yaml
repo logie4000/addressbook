@@ -1,11 +1,13 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Address Book API: the Rails app running in AWS Lambda behind an API Gateway
-  HTTP API, storing its data in two DynamoDB tables.
+  Address Book: the Angular site in S3 behind CloudFront, and the Rails API
+  running in AWS Lambda behind an API Gateway HTTP API, storing its data in
+  two DynamoDB tables. CloudFront serves both on one domain: /api/* goes to
+  the API and everything else to the site.
 
 # Everything here is pay-per-use. With no traffic it costs nothing apart from
-# a few cents a month to store the container image in ECR.
+# a few cents a month to store the container image in ECR and the site in S3.
 
 Parameters:
   StageName:
@@ -22,6 +24,25 @@ Parameters:
     Description: >
       SSM Parameter Store SecureString holding Rails' secret_key_base. Create it
       once before the first deploy (see docs/deploy-aws.md).
+
+  DomainName:
+    Type: String
+    Default: ""
+    Description: >
+      Optional custom domain for the site, e.g. addressbook.example.com. Needs
+      CertificateArn too. Leave empty to use the CloudFront domain only.
+
+  CertificateArn:
+    Type: String
+    Default: ""
+    Description: >
+      ARN of a validated ACM certificate for DomainName. CloudFront requires
+      the certificate to be in us-east-1.
+
+Conditions:
+  HasCustomDomain: !And
+    - !Not [!Equals [!Ref DomainName, ""]]
+    - !Not [!Equals [!Ref CertificateArn, ""]]
 
 Globals:
   Function:
@@ -134,7 +155,142 @@ Resources:
       LogGroupName: !Sub /aws/lambda/addressbook-api-${StageName}
       RetentionInDays: 14
 
+  # --- Website -----------------------------------------------------------------
+
+  # Private bucket holding the built Angular files. Only CloudFront can read
+  # it (see SiteBucketPolicy). Retained on delete because CloudFormation can't
+  # delete a bucket that still has files in it.
+  SiteBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  SiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SiteBucket
+      PolicyDocument:
+        Statement:
+          - Sid: AllowCloudFrontRead
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub ${SiteBucket.Arn}/*
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}
+
+  SiteOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub addressbook-${StageName}-site
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # The Angular app does its own routing, so a deep link such as
+  # /people/<id> must load index.html. Paths with a file extension
+  # (main-ABC123.js, favicon.png) are left alone.
+  SpaRewriteFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub addressbook-${StageName}-spa-rewrite
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Serve index.html for Angular routes
+        Runtime: cloudfront-js-2.0
+      FunctionCode: |
+        function handler(event) {
+          var request = event.request;
+          var lastSegment = request.uri.split('/').pop();
+          if (lastSegment.indexOf('.') === -1) {
+            request.uri = '/index.html';
+          }
+          return request;
+        }
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub Address Book (${StageName})
+        Aliases: !If [HasCustomDomain, [!Ref DomainName], !Ref AWS::NoValue]
+        ViewerCertificate: !If
+          - HasCustomDomain
+          - AcmCertificateArn: !Ref CertificateArn
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          - CloudFrontDefaultCertificate: true
+        DefaultRootObject: index.html
+        HttpVersion: http2and3
+        # Edge locations in North America and Europe only: the cheapest tier.
+        PriceClass: PriceClass_100
+        Origins:
+          - Id: site
+            DomainName: !GetAtt SiteBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt SiteOriginAccessControl.Id
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+          - Id: api
+            DomainName: !Sub ${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+                - TLSv1.2
+        DefaultCacheBehavior:
+          TargetOriginId: site
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+          # AWS managed policy "CachingOptimized"
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt SpaRewriteFunction.FunctionARN
+        CacheBehaviors:
+          - PathPattern: /api/*
+            TargetOriginId: api
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+            # AWS managed policies "CachingDisabled" and
+            # "AllViewerExceptHostHeader": never cache API responses, and pass
+            # along everything except Host (API Gateway needs its own).
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+
 Outputs:
+  SiteUrl:
+    Description: The address book website
+    Value: !If
+      - HasCustomDomain
+      - !Sub https://${DomainName}
+      - !Sub https://${Distribution.DomainName}
+  DistributionDomainName:
+    Description: Point your domain's CNAME record here
+    Value: !GetAtt Distribution.DomainName
+  DistributionId:
+    Description: Used by scripts/deploy-site.sh to clear CloudFront's cache
+    Value: !Ref Distribution
+  SiteBucketName:
+    Description: Used by scripts/deploy-site.sh to upload the site
+    Value: !Ref SiteBucket
   ApiUrl:
     Description: Base URL of the API. Try <ApiUrl>/up and <ApiUrl>/api/v1/people.
     Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com

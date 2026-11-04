@@ -4,9 +4,10 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { APP_BASE_HREF, PlatformLocation } from '@angular/common';
+import { environment } from '../environments/environment';
 
 export const APP_TITLE = "Address Book";
-export const REST_DB_PATH = 'https://www.teapothill.org/addressbook/api';
+export const REST_DB_PATH = environment.apiBaseUrl;
 
 export const HOST_ADDRESS_SERVICE = 'addresses';
 export const HOST_PEOPLE_SERVICE = 'people';
