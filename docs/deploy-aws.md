@@ -2,7 +2,8 @@
 
 The Angular site is a set of files in a private S3 bucket, served by
 CloudFront. The API runs as a single AWS Lambda function behind an API Gateway
-HTTP API, with its data in DynamoDB. CloudFront puts both on one domain:
+HTTP API, with its data in DynamoDB. Signing in goes through Amazon Cognito,
+and the API rejects any request without a valid sign-in token. CloudFront puts both on one domain:
 requests under `/api/` go to the API and everything else to the site, so the
 browser never makes a cross-site request.
 
@@ -15,12 +16,13 @@ with the AWS SAM CLI. The site's files are published separately with
 | Resource | What it is | Cost at address-book scale |
 |----------|------------|----------------------------|
 | `addressbook-api-production` (Lambda) | Rails, packaged as a container image by `api/Dockerfile.lambda`. Runs only while handling a request. | Free tier: 1M requests and 400,000 GB-seconds a month, always free |
-| HTTP API (API Gateway) | Public HTTPS endpoint that passes every request to the function | $1 per million requests |
+| HTTP API (API Gateway) | HTTPS endpoint that checks the Cognito sign-in token, then passes the request to the function | $1 per million requests |
 | `addressbook_production_people`, `addressbook_production_addresses` (DynamoDB) | The data, billed per request | Free tier: 25 GB storage, always free |
 | ECR repository | Stores the container image (created by SAM) | About $0.10 per GB a month, so a few cents |
 | CloudWatch log group | Function logs, kept 14 days | Pennies |
 | SSM parameter | Rails' `secret_key_base` | Free (standard parameter) |
 | S3 bucket | The built Angular files. Private: only CloudFront can read it. | A few cents |
+| Cognito user pool | Sign-in accounts and the hosted sign-in page | Lite tier: free up to 10,000 monthly active users |
 | CloudFront distribution | HTTPS front door for the site and the API, with a small function that sends Angular routes to `index.html` | Free tier: 1 TB and 10M requests a month, always free |
 
 The DynamoDB tables and the S3 bucket are set to **Retain**: deleting the
@@ -85,28 +87,46 @@ Settings such as the region (`us-east-1`) and stack name live in
 > `Architectures` in `template.yaml` to `arm64`. It also runs about 20%
 > cheaper on Lambda.
 
-## Trying it out
+## Signing in
 
-Open **SiteUrl** (`https://<something>.cloudfront.net`) in a browser.
+Only people you create accounts for can use the address book; there is no
+public sign-up. Accounts live in a Cognito user pool (the **UserPoolId**
+output). Cognito's Lite tier is free for up to 10,000 active users a month.
 
-To exercise the API directly:
+**Create an account** (Cognito emails a temporary password):
 
 ```sh
-API=https://<something>.cloudfront.net   # SiteUrl; ApiUrl works too
+POOL=$(aws cloudformation describe-stacks --region us-east-1 --stack-name addressbook-production \
+  --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)
 
-curl $API/up
-curl -X POST $API/api/v1/people -H 'Content-Type: application/json' \
-  -d '{"person": {"firstName": "Ann", "lastName": "Example",
-       "address_attributes": {"street1": "1 Main St", "city": "Springfield"}}}'
-curl $API/api/v1/people
-curl $API/api/v1/addresses
+aws cognito-idp admin-create-user --region us-east-1 --user-pool-id "$POOL" \
+  --username you@example.com \
+  --user-attributes Name=email,Value=you@example.com Name=email_verified,Value=true
+```
+
+Then open **SiteUrl**. The app sends you to Cognito's sign-in page. Sign in
+with the temporary password and choose a new one (at least 12 characters,
+with upper and lower case letters and a number). You come back to the address
+book signed in, and a **Sign out** button appears at the top right.
+
+You can also manage accounts in the AWS console under Cognito → User pools →
+`addressbook-production`.
+
+## Trying it out
+
+Open **SiteUrl** (`https://<something>.cloudfront.net`) in a browser and sign
+in.
+
+The API itself only answers requests that carry a valid sign-in token, so
+from the command line only the health check works:
+
+```sh
+curl https://<something>.cloudfront.net/up                 # 200
+curl https://<something>.cloudfront.net/api/v1/people      # 401 Unauthorized
 ```
 
 The first request after a quiet spell takes a few seconds while Lambda starts
 Rails (a "cold start"). Requests after that are fast.
-
-The site and API are open to anyone with the URL until login is added (step
-4 of the plan), so don't load real data yet.
 
 ## Using your own subdomain
 
@@ -164,5 +184,5 @@ sam delete --stack-name addressbook-production
 ```
 
 This removes the function, API, CloudFront distribution and logs. The two
-DynamoDB tables, the S3 bucket and the SSM parameter stay behind; delete them
-in the console if you no longer want them.
+DynamoDB tables, the S3 bucket, the Cognito user pool and the SSM parameter
+stay behind; delete them in the console if you no longer want them.

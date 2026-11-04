@@ -106,11 +106,71 @@ Resources:
   # --- API -------------------------------------------------------------------
 
   # HTTP API: API Gateway's cheaper, simpler flavor. Every request goes to the
-  # Rails function, which does its own routing.
-  HttpApi:
-    Type: AWS::Serverless::HttpApi
+  # Rails function, which does its own routing. Requests must carry a valid
+  # Cognito access token, except the /up health check.
+  #
+  # These are plain API Gateway resources rather than a SAM HttpApi with
+  # function events: the authorizer needs the Cognito app client, the app
+  # client needs CloudFront's domain for its sign-in redirect, and CloudFront
+  # needs the API, which SAM's all-in-one HttpApi would turn into a cycle.
+  Api:
+    Type: AWS::ApiGatewayV2::Api
     Properties:
+      Name: !Sub addressbook-api-${StageName}
+      ProtocolType: HTTP
+
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref Api
       StageName: $default
+      AutoDeploy: true
+
+  ApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref Api
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt ApiFunction.Arn
+      PayloadFormatVersion: "2.0"
+
+  ApiAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref Api
+      Name: cognito
+      AuthorizerType: JWT
+      IdentitySource:
+        - $request.header.Authorization
+      JwtConfiguration:
+        Issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}
+        Audience:
+          - !Ref UserPoolClient
+
+  ApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref Api
+      RouteKey: ANY /{proxy+}
+      AuthorizationType: JWT
+      AuthorizerId: !Ref ApiAuthorizer
+      Target: !Sub integrations/${ApiIntegration}
+
+  HealthCheckRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref Api
+      RouteKey: GET /up
+      AuthorizationType: NONE
+      Target: !Sub integrations/${ApiIntegration}
+
+  ApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ApiFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*
 
   ApiFunction:
     Type: AWS::Serverless::Function
@@ -140,13 +200,6 @@ Resources:
             - Effect: Allow
               Action: ssm:GetParameter
               Resource: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${SecretKeyBaseParameter}
-      Events:
-        AllRequests:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref HttpApi
-            Path: /{proxy+}
-            Method: ANY
 
   # Keep logs for two weeks instead of forever, so storage never piles up.
   ApiLogGroup:
@@ -248,7 +301,7 @@ Resources:
             S3OriginConfig:
               OriginAccessIdentity: ""
           - Id: api
-            DomainName: !Sub ${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
+            DomainName: !Sub ${Api}.execute-api.${AWS::Region}.amazonaws.com
             CustomOriginConfig:
               OriginProtocolPolicy: https-only
               OriginSSLProtocols:
@@ -275,6 +328,84 @@ Resources:
             CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
             OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
 
+  # --- Sign-in ---------------------------------------------------------------
+
+  # Who may use the address book. Only an administrator can create accounts
+  # (no public sign-up); people sign in with their email address. The Lite
+  # tier is free for up to 10,000 monthly active users. Retained on delete so
+  # the accounts aren't lost with the stack.
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      UserPoolName: !Sub addressbook-${StageName}
+      UserPoolTier: LITE
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 12
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          TemporaryPasswordValidityDays: 7
+
+  # Cognito's hosted sign-in page lives at
+  # https://addressbook-<stage>-<account id>.auth.<region>.amazoncognito.com
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      UserPoolId: !Ref UserPool
+      Domain: !Sub addressbook-${StageName}-${AWS::AccountId}
+      ManagedLoginVersion: 1
+
+  # The Angular app. It's a public client (no secret, since anything in a
+  # browser is visible), using the authorization code flow with PKCE.
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub addressbook-web-${StageName}
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      SupportedIdentityProviders:
+        - COGNITO
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - profile
+      CallbackURLs: !If
+        - HasCustomDomain
+        - [!Sub "https://${DomainName}/", !Sub "https://${Distribution.DomainName}/"]
+        - [!Sub "https://${Distribution.DomainName}/"]
+      LogoutURLs: !If
+        - HasCustomDomain
+        - [!Sub "https://${DomainName}/", !Sub "https://${Distribution.DomainName}/"]
+        - [!Sub "https://${Distribution.DomainName}/"]
+      ExplicitAuthFlows:
+        - ALLOW_REFRESH_TOKEN_AUTH
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+
 Outputs:
   SiteUrl:
     Description: The address book website
@@ -292,8 +423,17 @@ Outputs:
     Description: Used by scripts/deploy-site.sh to upload the site
     Value: !Ref SiteBucket
   ApiUrl:
-    Description: Base URL of the API. Try <ApiUrl>/up and <ApiUrl>/api/v1/people.
-    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
+    Description: Base URL of the API (also reachable through SiteUrl). Try <ApiUrl>/up.
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com
+  UserPoolId:
+    Description: Cognito user pool. Create accounts here (see docs/deploy-aws.md).
+    Value: !Ref UserPool
+  UserPoolClientId:
+    Description: Used by scripts/deploy-site.sh to configure sign-in
+    Value: !Ref UserPoolClient
+  CognitoDomain:
+    Description: Host of the hosted sign-in page
+    Value: !Sub ${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com
   ApiFunctionName:
     Description: Lambda function running Rails
     Value: !Ref ApiFunction

@@ -20,6 +20,9 @@ output() {
 BUCKET="$(output SiteBucketName)"
 DISTRIBUTION="$(output DistributionId)"
 SITE_URL="$(output SiteUrl)"
+USER_POOL_ID="$(output UserPoolId)"
+CLIENT_ID="$(output UserPoolClientId)"
+COGNITO_DOMAIN="$(output CognitoDomain)"
 
 echo "== Building the client"
 cd "$ROOT/client"
@@ -27,16 +30,33 @@ npm ci
 npx ng build --configuration production
 DIST="$ROOT/client/dist/addressbook/browser"
 
+# The app reads its sign-in settings from config.json at startup, so nothing
+# account-specific is compiled into it.
+cat > "$DIST/config.json" <<JSON
+{
+  "auth": {
+    "region": "$REGION",
+    "userPoolId": "$USER_POOL_ID",
+    "clientId": "$CLIENT_ID",
+    "domain": "$COGNITO_DOMAIN"
+  }
+}
+JSON
+
 echo "== Uploading to s3://$BUCKET"
 # Built files have content hashes in their names, so browsers can cache them
-# for a year. index.html is not hashed, so it must always be re-checked.
+# for a year. index.html and config.json are not, so they must always be
+# re-checked.
 aws s3 sync "$DIST" "s3://$BUCKET" --region "$REGION" --delete \
-  --exclude index.html --cache-control "public, max-age=31536000, immutable"
-aws s3 cp "$DIST/index.html" "s3://$BUCKET/index.html" --region "$REGION" \
-  --cache-control "no-cache"
+  --exclude index.html --exclude config.json \
+  --cache-control "public, max-age=31536000, immutable"
+for file in index.html config.json; do
+  aws s3 cp "$DIST/$file" "s3://$BUCKET/$file" --region "$REGION" \
+    --cache-control "no-cache"
+done
 
-echo "== Clearing CloudFront's copy of index.html"
+echo "== Clearing CloudFront's copy of index.html and config.json"
 aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION" \
-  --paths "/index.html" "/" --query "Invalidation.Id" --output text
+  --paths "/index.html" "/" "/config.json" --query "Invalidation.Id" --output text
 
 echo "== Done: $SITE_URL"
