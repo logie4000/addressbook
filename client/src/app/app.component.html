@@ -1,3 +1,7 @@
-
+@if (auth.enabled) {
+  <div class="session">
+    <span>{{ auth.email }}</span>
+    <button type="button" (click)="auth.signOut()">Sign out</button>
+  </div>
+}
 <router-outlet></router-outlet>
-    

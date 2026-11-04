@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { APP_TITLE } from './app.config';
+import { AuthService } from './auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -10,4 +11,5 @@ import { APP_TITLE } from './app.config';
 })
 export class AppComponent {
   title = APP_TITLE;
+  auth = inject(AuthService);
 }
