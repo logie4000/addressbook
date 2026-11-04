@@ -11,6 +11,7 @@ cached = true
 [default.deploy.parameters]
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
+resolve_s3 = true
 resolve_image_repos = true
 confirm_changeset = true
 parameter_overrides = "StageName=\"production\" SecretKeyBaseParameter=\"/addressbook/production/SECRET_KEY_BASE\""

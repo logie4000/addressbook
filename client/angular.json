@@ -67,7 +67,8 @@
               "buildTarget": "addressbook:build:production"
             },
             "development": {
-              "buildTarget": "addressbook:build:development"
+              "buildTarget": "addressbook:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
