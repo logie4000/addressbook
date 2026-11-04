@@ -30,7 +30,7 @@ describe('AuthService', () => {
     });
     const service = TestBed.inject(AuthService);
 
-    await service.signIn();
+    await service.signIn('');
 
     const settings = oauth.configure.calls.mostRecent().args[0];
     expect(settings.issuer).toBe('https://cognito-idp.us-east-1.amazonaws.com/us-east-1_ABC');
@@ -42,5 +42,51 @@ describe('AuthService', () => {
 
     service.signOut();
     expect(oauth.logOut).toHaveBeenCalled();
+  });
+
+  describe('when Cognito returns an error', () => {
+    let oauth: jasmine.SpyObj<OAuthService>;
+    let service: AuthService;
+
+    beforeEach(() => {
+      oauth = jasmine.createSpyObj<OAuthService>('OAuthService',
+        ['configure', 'setupAutomaticSilentRefresh', 'loadDiscoveryDocumentAndLogin',
+         'loadDiscoveryDocument', 'initCodeFlow']);
+      oauth.loadDiscoveryDocument.and.resolveTo({} as never);
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: OAuthService, useValue: oauth },
+          { provide: RUNTIME_CONFIG, useValue: { auth: {
+            region: 'us-east-1', userPoolId: 'us-east-1_ABC', clientId: 'client123', domain: 'example.com',
+          } } },
+        ],
+      });
+      service = TestBed.inject(AuthService);
+      spyOn<any>(service, 'clearAddressBar');
+      sessionStorage.removeItem('auth.linkRetried');
+    });
+
+    afterEach(() => sessionStorage.removeItem('auth.linkRetried'));
+
+    it('shows why sign-in was refused instead of looping back to sign in', async () => {
+      await service.signIn('?error_description=PreSignUp+failed+with+error+' +
+        'This+Google+account+has+not+been+invited+to+the+address+book.+&error=invalid_request');
+
+      expect(service.error).toBe('This Google account has not been invited to the address book.');
+      expect(oauth.loadDiscoveryDocumentAndLogin).not.toHaveBeenCalled();
+      expect(oauth.initCodeFlow).not.toHaveBeenCalled();
+    });
+
+    it('signs in again once after a Google account is first linked', async () => {
+      const linked = '?error_description=Already+found+an+entry+for+username+google_123+&error=invalid_request';
+
+      await service.signIn(linked);
+      expect(oauth.initCodeFlow).toHaveBeenCalledTimes(1);
+      expect(service.error).toBeUndefined();
+
+      await service.signIn(linked);
+      expect(oauth.initCodeFlow).toHaveBeenCalledTimes(1);
+      expect(service.error).toContain('Already found an entry');
+    });
   });
 });

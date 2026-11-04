@@ -1,7 +1,14 @@
-@if (auth.enabled) {
-  <div class="session">
-    <span>{{ auth.email }}</span>
-    <button type="button" (click)="auth.signOut()">Sign out</button>
+@if (auth.error) {
+  <div class="sign-in-error" role="alert">
+    <p>You couldn't be signed in: {{ auth.error }}</p>
+    <button type="button" (click)="auth.startSignIn()">Try another account</button>
   </div>
+} @else {
+  @if (auth.enabled) {
+    <div class="session">
+      <span>{{ auth.email }}</span>
+      <button type="button" (click)="auth.signOut()">Sign out</button>
+    </div>
+  }
+  <router-outlet></router-outlet>
 }
-<router-outlet></router-outlet>

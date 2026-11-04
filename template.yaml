@@ -39,10 +39,25 @@ Parameters:
       ARN of a validated ACM certificate for DomainName. CloudFront requires
       the certificate to be in us-east-1.
 
+  GoogleClientId:
+    Type: String
+    Default: ""
+    Description: >
+      Optional OAuth client ID from Google Cloud, to offer "Continue with
+      Google" on the sign-in page. Leave empty for email and password only.
+
+  GoogleClientSecretParameter:
+    Type: String
+    Default: /addressbook/production/GOOGLE_CLIENT_SECRET
+    Description: >
+      SSM Parameter Store String holding the Google OAuth client secret. Only
+      read when GoogleClientId is set (see docs/deploy-aws.md).
+
 Conditions:
   HasCustomDomain: !And
     - !Not [!Equals [!Ref DomainName, ""]]
     - !Not [!Equals [!Ref CertificateArn, ""]]
+  HasGoogle: !Not [!Equals [!Ref GoogleClientId, ""]]
 
 Globals:
   Function:
@@ -359,6 +374,10 @@ Resources:
           RequireNumbers: true
           RequireSymbols: false
           TemporaryPasswordValidityDays: 7
+      LambdaConfig: !If
+        - HasGoogle
+        - PreSignUp: !GetAtt PreSignUpFunction.Arn
+        - !Ref AWS::NoValue
 
   # Cognito's hosted sign-in page lives at
   # https://addressbook-<stage>-<account id>.auth.<region>.amazoncognito.com
@@ -377,8 +396,10 @@ Resources:
       ClientName: !Sub addressbook-web-${StageName}
       UserPoolId: !Ref UserPool
       GenerateSecret: false
-      SupportedIdentityProviders:
-        - COGNITO
+      SupportedIdentityProviders: !If
+        - HasGoogle
+        - [COGNITO, !Ref GoogleIdentityProvider]
+        - [COGNITO]
       AllowedOAuthFlowsUserPoolClient: true
       AllowedOAuthFlows:
         - code
@@ -405,6 +426,57 @@ Resources:
         AccessToken: hours
         IdToken: hours
         RefreshToken: days
+
+  # --- Signing in with Google (only when GoogleClientId is set) ---------------
+
+  # Adds "Continue with Google" to the hosted sign-in page.
+  GoogleIdentityProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Condition: HasGoogle
+    Properties:
+      UserPoolId: !Ref UserPool
+      ProviderName: Google
+      ProviderType: Google
+      ProviderDetails:
+        client_id: !Ref GoogleClientId
+        client_secret: !Sub "{{resolve:ssm:${GoogleClientSecretParameter}}}"
+        authorize_scopes: openid email profile
+      AttributeMapping:
+        email: email
+        email_verified: email_verified
+
+  # Runs on someone's first Google sign-in: links it to the account you
+  # created for that email, or refuses it if there is none. See
+  # functions/pre_sign_up/app.py.
+  PreSignUpFunction:
+    Type: AWS::Serverless::Function
+    Condition: HasGoogle
+    Properties:
+      FunctionName: !Sub addressbook-pre-sign-up-${StageName}
+      CodeUri: functions/pre_sign_up/
+      Handler: app.handler
+      Runtime: python3.13
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Timeout: 10
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:ListUsers
+                - cognito-idp:AdminLinkProviderForUser
+              # Can't name the pool itself: it refers to this function.
+              Resource: !Sub arn:${AWS::Partition}:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/*
+
+  PreSignUpInvokePermission:
+    Type: AWS::Lambda::Permission
+    Condition: HasGoogle
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PreSignUpFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt UserPool.Arn
 
 Outputs:
   SiteUrl:

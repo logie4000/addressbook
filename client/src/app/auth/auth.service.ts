@@ -13,6 +13,9 @@ export class AuthService {
   private readonly config = inject(RUNTIME_CONFIG);
   private readonly injector = inject(Injector);
 
+  /** Why the last sign-in attempt was refused, shown instead of the app. */
+  error?: string;
+
   get enabled(): boolean {
     return !!this.config.auth;
   }
@@ -23,8 +26,11 @@ export class AuthService {
     return this.injector.get(OAuthService);
   }
 
-  /** Completes a sign-in redirect, or sends the user to sign in. */
-  async signIn(): Promise<void> {
+  /**
+   * Completes a sign-in redirect, or sends the user to sign in. `search` is
+   * the page's query string, where Cognito puts the result of a sign-in.
+   */
+  async signIn(search = window.location.search): Promise<void> {
     const auth = this.config.auth;
     if (!auth) {
       return;
@@ -48,7 +54,47 @@ export class AuthService {
     });
     this.oauth.setupAutomaticSilentRefresh();
 
+    const params = new URLSearchParams(search);
+    const problem = params.get('error_description') || params.get('error');
+    if (problem) {
+      this.clearAddressBar(appUrl);
+      // The first Google sign-in for an invited person links Google to their
+      // account, and Cognito then asks for one more try. It goes straight
+      // through, since they're already signed in to Google.
+      if (/already found an entry for username/i.test(problem) && this.firstRetry()) {
+        await this.startSignIn();
+        return;
+      }
+      this.error = problem.replace(/^PreSignUp failed with error\s*/i, '').trim();
+      return;
+    }
+
     await this.oauth.loadDiscoveryDocumentAndLogin();
+  }
+
+  /** Sends the user to the sign-in page again, e.g. after an error. */
+  async startSignIn(): Promise<void> {
+    await this.oauth.loadDiscoveryDocument();
+    this.oauth.initCodeFlow();
+  }
+
+  private clearAddressBar(appUrl: string): void {
+    history.replaceState(null, '', appUrl);
+  }
+
+  // Retries the linking step only once per browser tab, so a persistent
+  // error can't send the page round in circles.
+  private firstRetry(): boolean {
+    const key = 'auth.linkRetried';
+    try {
+      if (sessionStorage.getItem(key)) {
+        return false;
+      }
+      sessionStorage.setItem(key, '1');
+    } catch {
+      // Storage unavailable: retry anyway.
+    }
+    return true;
   }
 
   get email(): string | undefined {
