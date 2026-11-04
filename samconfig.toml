@@ -14,4 +14,4 @@ capabilities = "CAPABILITY_IAM"
 resolve_s3 = true
 resolve_image_repos = true
 confirm_changeset = true
-parameter_overrides = "StageName=\"production\" SecretKeyBaseParameter=\"/addressbook/production/SECRET_KEY_BASE\""
+parameter_overrides = "StageName=\"production\" SecretKeyBaseParameter=\"/addressbook/production/SECRET_KEY_BASE\" DomainName=\"addressbook.specialbrew.net\" CertificateArn=\"arn:aws:acm:us-east-1:470114120012:certificate/d9f6772e-6387-4083-9dcb-92af16878e29\""
