@@ -90,6 +90,9 @@ GEM
     aws-sdk-dynamodb (1.180.0)
       aws-sdk-core (~> 3, >= 3.263.0)
       aws-sigv4 (~> 1.5)
+    aws-sdk-ssm (1.228.0)
+      aws-sdk-core (~> 3, >= 3.263.0)
+      aws-sigv4 (~> 1.5)
     aws-sigv4 (1.12.1)
       aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.3.0)
@@ -142,6 +145,10 @@ GEM
       sshkit (>= 1.23.0, < 2.0)
       thor (~> 1.3)
       zeitwerk (>= 2.6.18, < 3.0)
+    lambda-console-ruby (1.0.0)
+    lamby (7.0.0)
+      lambda-console-ruby
+      rack (>= 3.0.0)
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     logger (1.7.0)
@@ -325,12 +332,14 @@ PLATFORMS
 
 DEPENDENCIES
   aws-sdk-dynamodb (~> 1.0)
+  aws-sdk-ssm (~> 1.0)
   bootsnap
   brakeman
   bundler-audit
   debug
   dynamoid (~> 3.11)
   kamal
+  lamby (~> 7.0)
   puma (>= 5.0)
   rails (~> 8.1.2)
   rubocop-rails-omakase

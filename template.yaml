@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Address Book API: the Rails app running in AWS Lambda behind an API Gateway
+  HTTP API, storing its data in two DynamoDB tables.
+
+# Everything here is pay-per-use. With no traffic it costs nothing apart from
+# a few cents a month to store the container image in ECR.
+
+Parameters:
+  StageName:
+    Type: String
+    Default: production
+    AllowedPattern: "[a-z0-9-]+"
+    Description: >
+      Name of this deployment. Used in resource names, so separate stages
+      (e.g. "production" and "staging") get separate tables.
+
+  SecretKeyBaseParameter:
+    Type: String
+    Default: /addressbook/production/SECRET_KEY_BASE
+    Description: >
+      SSM Parameter Store SecureString holding Rails' secret_key_base. Create it
+      once before the first deploy (see docs/deploy-aws.md).
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 1024
+
+Resources:
+  # --- Data ------------------------------------------------------------------
+
+  # Table names must match what Dynamoid expects: "<prefix>_<model table>",
+  # with the prefix passed to the function as DYNAMODB_TABLE_PREFIX.
+  PeopleTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub addressbook_${StageName}_people
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: parent_id
+          AttributeType: S
+        - AttributeName: address_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: parent_id-index
+          KeySchema:
+            - AttributeName: parent_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: address_id-index
+          KeySchema:
+            - AttributeName: address_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  AddressesTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub addressbook_${StageName}_addresses
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  # --- API -------------------------------------------------------------------
+
+  # HTTP API: API Gateway's cheaper, simpler flavor. Every request goes to the
+  # Rails function, which does its own routing.
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      DockerContext: ./api
+      Dockerfile: Dockerfile.lambda
+      DockerTag: ruby3.4
+    Properties:
+      FunctionName: !Sub addressbook-api-${StageName}
+      PackageType: Image
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          RAILS_ENV: production
+          RAILS_LOG_LEVEL: info
+          DYNAMODB_TABLE_PREFIX: !Sub addressbook_${StageName}
+          SECRET_KEY_BASE_PARAMETER: !Ref SecretKeyBaseParameter
+      LoggingConfig:
+        LogGroup: !Ref ApiLogGroup
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PeopleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AddressesTable
+        - Statement:
+            - Effect: Allow
+              Action: ssm:GetParameter
+              Resource: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${SecretKeyBaseParameter}
+      Events:
+        AllRequests:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /{proxy+}
+            Method: ANY
+
+  # Keep logs for two weeks instead of forever, so storage never piles up.
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/addressbook-api-${StageName}
+      RetentionInDays: 14
+
+Outputs:
+  ApiUrl:
+    Description: Base URL of the API. Try <ApiUrl>/up and <ApiUrl>/api/v1/people.
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
+  ApiFunctionName:
+    Description: Lambda function running Rails
+    Value: !Ref ApiFunction
+  PeopleTableName:
+    Value: !Ref PeopleTable
+  AddressesTableName:
+    Value: !Ref AddressesTable
