@@ -5,11 +5,10 @@
       <span>Street address</span>
       <span>City, State ZIP</span>
       <span class="sent">Last sent</span>
-      <span></span>
     </div>
     @for (address of sorted(); track address.id) {
       <!-- The name link stretches over the whole row (see .row-link), so the
-           mark-sent button can sit in the row without being inside a link. -->
+           buttons can sit in the row without being inside a link. -->
       <div class="row" role="listitem" routerLinkActive="selected">
         <a class="name row-link" [routerLink]="getUrl(address)" routerLinkActive="current" [ariaCurrentWhenActive]="true">
           {{ getListName(address) }}
@@ -19,19 +18,27 @@
         </a>
         <span class="street">{{ getStreetAddress(address) }}</span>
         <span class="city">{{ getCityStateZip(address) }}</span>
-        <span class="sent">{{ address.lastSent || '—' }}</span>
-        <span class="mark">
-          @let sentThisYear = address.lastSent === currentYear;
-          <button
-            type="button"
-            class="icon-button"
-            [class.done]="sentThisYear"
-            [disabled]="sentThisYear || marking().has(address.id)"
-            [title]="sentThisYear ? 'Sent in ' + currentYear : 'Mark sent in ' + currentYear"
-            [attr.aria-label]="(sentThisYear ? 'Sent in ' : 'Mark sent in ') + currentYear"
-            (click)="markSent(address)">
-            <app-icon name="mail" />
-          </button>
+        <span class="sent">
+          <span class="year">{{ address.lastSent || '—' }}</span>
+          <span class="row-actions">
+            <button type="button" class="icon-button small" title="Edit" [attr.aria-label]="'Edit ' + getListName(address)" (click)="editAddress(address)">
+              <app-icon name="edit" />
+            </button>
+            <button type="button" class="icon-button small danger" title="Delete" [attr.aria-label]="'Delete ' + getListName(address)" [disabled]="busy().has(address.id)" (click)="deleteAddress(address)">
+              <app-icon name="delete" />
+            </button>
+            @let sentThisYear = address.lastSent === currentYear;
+            <button
+              type="button"
+              class="icon-button small mark"
+              [class.done]="sentThisYear"
+              [disabled]="sentThisYear || busy().has(address.id)"
+              [title]="sentThisYear ? 'Sent in ' + currentYear : 'Mark sent in ' + currentYear"
+              [attr.aria-label]="(sentThisYear ? 'Sent in ' : 'Mark sent in ') + currentYear"
+              (click)="markSent(address)">
+              <app-icon name="mail" />
+            </button>
+          </span>
         </span>
       </div>
     } @empty {

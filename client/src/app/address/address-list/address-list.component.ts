@@ -23,35 +23,65 @@ export type AddressView = 'cards' | 'list';
 export class AddressListComponent extends ModelListComponent<Address> {
   readonly currentYear = String(new Date().getFullYear());
 
-  /** Ids of addresses whose mark-sent request is in flight. */
-  marking = signal<ReadonlySet<string>>(new Set());
+  /** Ids of addresses with a mark-sent or delete request in flight. */
+  busy = signal<ReadonlySet<string>>(new Set());
   private changes = inject(DataChangesService);
+
+  private setBusy(id: string, on: boolean): void {
+    this.busy.update((ids) => {
+      const next = new Set(ids);
+      if (on) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+  }
 
   /** Sets Last sent to this year (the browser's year), then refreshes. */
   markSent(address: Address): void {
-    if (this.marking().has(address.id)) {
+    if (this.busy().has(address.id)) {
       return;
     }
-    const setMarking = (on: boolean) =>
-      this.marking.update((ids) => {
-        const next = new Set(ids);
-        if (on) {
-          next.add(address.id);
-        } else {
-          next.delete(address.id);
-        }
-        return next;
-      });
-
-    setMarking(true);
+    this.setBusy(address.id, true);
     this.itemService.update(address.id, { address: { lastSent: this.currentYear } }).subscribe({
       next: () => {
-        setMarking(false);
+        this.setBusy(address.id, false);
         this.changes.notify();
       },
       error: () => {
-        setMarking(false);
+        this.setBusy(address.id, false);
         window.alert(`Last sent couldn't be updated for ${this.getListName(address)}. Please try again.`);
+      },
+    });
+  }
+
+  /** Opens the address in the details panel, straight into its edit form. */
+  editAddress(address: Address): void {
+    this.router.navigate(['/addresses', address.id], { queryParams: { edit: 1 } });
+  }
+
+  deleteAddress(address: Address): void {
+    if (
+      this.busy().has(address.id) ||
+      !window.confirm(`Delete ${this.getListName(address)} at ${this.getStreetAddress(address).replace('\n', ', ')}? Everyone who lives there is deleted too.`)
+    ) {
+      return;
+    }
+    this.setBusy(address.id, true);
+    this.itemService.delete(address.id).subscribe({
+      next: () => {
+        this.setBusy(address.id, false);
+        this.changes.notify();
+        // Close the panel if it was showing the deleted address.
+        if (this.router.url.split('?')[0].endsWith(`/addresses/${address.id}`)) {
+          this.router.navigateByUrl('/addresses');
+        }
+      },
+      error: () => {
+        this.setBusy(address.id, false);
+        window.alert(`${this.getListName(address)} couldn't be deleted. Please try again.`);
       },
     });
   }

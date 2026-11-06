@@ -77,6 +77,31 @@ export abstract class ModelComponent<Model extends { id: string }> {
   error = computed(() => this.loadResource.error());
   model = this.loadResource.value;
 
+  /** Set by ?edit=1 (the list's edit buttons): open the form once loaded. */
+  private editRequested = false;
+
+  queryParams$ = this.activatedRoute.queryParams.subscribe((params) => {
+    if (params['edit']) {
+      this.editRequested = true;
+      this.openRequestedEdit();
+    }
+  });
+
+  private openEditWhenLoaded = effect(() => {
+    if (this.model()) {
+      untracked(() => this.openRequestedEdit());
+    }
+  });
+
+  private openRequestedEdit(): void {
+    if (this.editRequested && this.model() && !this.loadResource.isLoading()) {
+      this.editRequested = false;
+      this.startEdit();
+      // Drop ?edit=1 so a reload or Back doesn't reopen the form.
+      this.router.navigate([], { relativeTo: this.activatedRoute, queryParams: {}, replaceUrl: true });
+    }
+  }
+
   startEdit(): void {
     this.saveError.set('');
     this.editing.set(true);

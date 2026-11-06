@@ -5,7 +5,7 @@ import { AddressService } from '../../models/address.service';
 import { provideHttpClient, withXhr } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { DataChangesService } from '../../shared/service/data-changes.service';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { ADDRESS_1 } from '../../test/test-data';
 
 describe('AddressListComponent', () => {
@@ -79,7 +79,7 @@ describe('AddressListComponent', () => {
     });
 
     const rows = () => Array.from(fixture.nativeElement.querySelectorAll('.row-list .row') as NodeListOf<HTMLElement>)
-      .map((row) => Array.from(row.querySelectorAll(':scope > .name, :scope > .street, :scope > .city, :scope > .sent')).map((cell) => cell.firstChild!.textContent!.trim()));
+      .map((row) => Array.from(row.querySelectorAll(':scope > .name, :scope > .street, :scope > .city, :scope > .sent')).map((cell) => (cell.querySelector('.year') ?? cell.firstChild)!.textContent!.trim()));
 
     it('shows one row per address, ordered by last name', () => {
       expect(rows()).toEqual([
@@ -99,7 +99,7 @@ describe('AddressListComponent', () => {
       const year = String(new Date().getFullYear());
       const http = TestBed.inject(HttpTestingController);
       const changes = TestBed.inject(DataChangesService);
-      const buttons = () => Array.from(fixture.nativeElement.querySelectorAll('.row .mark button') as NodeListOf<HTMLButtonElement>);
+      const buttons = () => Array.from(fixture.nativeElement.querySelectorAll('.row button.mark') as NodeListOf<HTMLButtonElement>);
 
       expect(buttons().length).toBe(3);
       expect(buttons()[1].getAttribute('aria-label')).toBe(`Mark sent in ${year}`);
@@ -114,11 +114,35 @@ describe('AddressListComponent', () => {
       expect(changes.version()).toBe(1);
     });
 
+    it('opens the edit form from a row', () => {
+      const router = TestBed.inject(Router);
+      const navigate = spyOn(router, 'navigate').and.resolveTo(true);
+      (fixture.nativeElement.querySelector('.row button[aria-label="Edit Okafor, Grace"]') as HTMLButtonElement).click();
+      expect(navigate).toHaveBeenCalledWith(['/addresses', 'o'], { queryParams: { edit: 1 } });
+    });
+
+    it('deletes from a row after confirming', () => {
+      const http = TestBed.inject(HttpTestingController);
+      const confirm = spyOn(window, 'confirm').and.returnValue(false);
+      const del = () => (fixture.nativeElement.querySelector('.row button[aria-label="Delete Okafor, Grace"]') as HTMLButtonElement).click();
+
+      del();
+      expect(confirm.calls.mostRecent().args[0]).toContain('Okafor, Grace at 7 Harbor Road');
+      http.expectNone((r) => r.method === 'DELETE');
+
+      confirm.and.returnValue(true);
+      del();
+      const req = http.expectOne((r) => r.method === 'DELETE');
+      expect(req.request.url).toMatch(/addresses\/o$/);
+      req.flush(null);
+      expect(TestBed.inject(DataChangesService).version()).toBe(1);
+    });
+
     it('shows when an address was already sent this year', () => {
       const year = String(new Date().getFullYear());
       fixture.componentRef.setInput('itemList', [{ ...ADDRESS_1, id: 'x', lastSent: year }]);
       fixture.detectChanges();
-      const button = fixture.nativeElement.querySelector('.row .mark button') as HTMLButtonElement;
+      const button = fixture.nativeElement.querySelector('.row button.mark') as HTMLButtonElement;
       expect(button.disabled).toBeTrue();
       expect(button.getAttribute('aria-label')).toBe(`Sent in ${year}`);
     });

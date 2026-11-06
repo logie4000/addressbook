@@ -102,6 +102,15 @@ describe('Editing records in the details panel', () => {
     expect(panel().querySelector('form')).toBeNull();
   });
 
+  it('opens straight into the edit form from ?edit=1, then drops it from the URL', async () => {
+    const empty = { ...address, addressee: undefined };
+    await harness.navigateByUrl('/addresses/1?edit=1');
+    await settle((req) => (req.request.url.endsWith('/1') ? empty : [empty]));
+
+    expect(panel().querySelector('form h2')?.textContent).toContain('Edit address');
+    expect(TestBed.inject(Router).url).toBe('/addresses/1');
+  });
+
   it('asks before deleting an address, then closes the panel', async () => {
     await harness.navigateByUrl('/addresses/1');
     await settle((req) => (req.request.url.endsWith('/1') ? address : [address]));
