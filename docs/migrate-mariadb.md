@@ -56,10 +56,13 @@ Nothing is written. The report has two parts:
   children get the household's address, the spouse link points both ways,
   children recorded under the spouse move to the addressee, and a child with
   no last name takes the household's (or, if a full name was typed into the
-  first-name box, it is split).
+  first-name box, it is split). People who still belong to no household
+  (no address, and not anyone's spouse or child) are left out. Last sent,
+  which the old app kept as a year, becomes a date: December 21 of that
+  year.
 - **For review (imported as is)**: things that look wrong but are kept,
-  such as placeholder names ("Child 2", "Spouse"), people in no household,
-  and names or street addresses that appear twice.
+  such as placeholder names ("New child", "Spouse") and names or street
+  addresses that appear twice.
 
 To leave people out, list their old ids (the `#` numbers in the report):
 
@@ -88,7 +91,7 @@ bin/rails "legacy:import[../legacy.sql]" CONFIRM=addressbook_production SKIP=...
 ```
 
 It writes the addresses and people, reads every record back and checks it.
-It ends with `Imported and verified 79 addresses and 258 people.` or a list
+It ends with `Imported and verified 79 addresses and 250 people.` or a list
 of problems.
 
 If the tables already hold records you entered in the new app, it stops and

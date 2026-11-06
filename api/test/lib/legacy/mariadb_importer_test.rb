@@ -17,7 +17,7 @@ class Legacy::MariadbImporterTest < ActiveSupport::TestCase
     importer.write!
 
     assert_equal 3, Address.count
-    assert_equal 7, Person.count
+    assert_equal 6, Person.count, "Lee and Kit, in no household, are left out"
 
     home = address(1)
     assert_equal "Ann", home.addressee.firstName
@@ -42,7 +42,8 @@ class Legacy::MariadbImporterTest < ActiveSupport::TestCase
     assert_equal "Jr.", person(2).suffix
     assert_nil person(5).spouse_id, "link to a missing person dropped"
     assert_equal Time.utc(2023, 12, 1, 18, 30), address(1).updated_at
-    assert_equal "2023", address(1).lastSent
+    assert_equal Date.new(2023, 12, 21), address(1).lastSent, "a bare year means December 21"
+    assert_nil address(2).lastSent
   end
 
   test "reports what it changed and what needs a look" do
@@ -53,7 +54,8 @@ class Legacy::MariadbImporterTest < ActiveSupport::TestCase
     assert_includes report.changes["Child's full name split into first and last"], "#6 Dana Smith"
     assert_includes report.changes["Link to a missing record dropped"], "#5 Zoë Müller: spouse_id 99"
     assert_includes report.review["Placeholder name"], "#4 Child 2 O'Neill"
-    assert_includes report.review["Not in any household"], "#7 Lee Loner"
+    assert_includes report.changes["Left out: in no household"], "#7 Lee Loner"
+    assert_equal [ "address #1 1 Oak Lane, Springfield, IL: 2023" ], report.changes["Last sent year stored as December 21 of that year"]
     assert_includes report.review["Street unknown"], "address #3 UNKNOWN"
     assert_includes report.to_s, "For review (imported as is):"
   end
@@ -63,29 +65,29 @@ class Legacy::MariadbImporterTest < ActiveSupport::TestCase
     importer.write!
 
     assert_equal 3, Address.count
-    assert_equal 7, Person.count
+    assert_equal 6, Person.count
     assert_empty importer.verify
   end
 
   test "verify finds records that are missing or changed" do
     run = importer
     run.write!
-    person(7).delete
+    person(6).delete
     person(1).update_attributes!(firstName: "Annie")
 
     problems = run.verify
 
-    assert_includes problems, "missing #{Legacy::MariadbImporter.person_id(7)}"
+    assert_includes problems, "missing #{Legacy::MariadbImporter.person_id(6)}"
     assert(problems.any? { |p| p.include?("firstName") })
   end
 
   test "skip leaves people out and drops links to them" do
-    run = importer(skip: %w[4 7])
+    run = importer(skip: %w[4])
     run.write!
 
     assert_equal 5, Person.count
     assert_equal [ "Cara" ], address(1).addressee.children.map(&:firstName)
-    assert_includes run.report.changes["Skipped (SKIP)"], "#7 Lee Loner"
+    assert_includes run.report.changes["Skipped (SKIP)"], "#4 Child 2"
   end
 
   test "rollback deletes only what the import created" do

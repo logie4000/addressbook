@@ -42,7 +42,7 @@ describe('Editing records in the details panel', () => {
     el.dispatchEvent(new Event('input'));
   };
 
-  const address = { ...ADDRESS_1, street1: '12 Elm Street', city: 'Springfield', lastSent: '2024' };
+  const address = { ...ADDRESS_1, street1: '12 Elm Street', city: 'Springfield', lastSent: '2024-12-21' };
   const field = (name: string) => panel().querySelector(`[formcontrolname="${name}"]`) as HTMLInputElement;
 
   it('edits an address with no household and refreshes the list', async () => {
@@ -57,14 +57,14 @@ describe('Editing records in the details panel', () => {
     expect(field('street1').value).toBe('12 Elm Street');
 
     type(field('city'), 'Shelbyville ');
-    type(field('lastSent'), '2025');
+    type(field('lastSent'), '2025-06-30');
     button('Save').click();
     seen = [];
     await settle((req) => (req.request.method === 'PATCH' || req.request.url.endsWith('/1') ? empty : [empty]));
 
     const patch = seen.find((req) => req.request.method === 'PATCH')!;
     expect(patch.request.url).toMatch(/addresses\/1$/);
-    expect(patch.request.body.address).toEqual(jasmine.objectContaining({ city: 'Shelbyville', lastSent: '2025' }));
+    expect(patch.request.body.address).toEqual(jasmine.objectContaining({ city: 'Shelbyville', lastSent: '2025-06-30' }));
     // The panel and the list both fetch again.
     expect(seen.filter((req) => req.request.method === 'GET').length).toBe(2);
     expect(panel().querySelector('form')).toBeNull();

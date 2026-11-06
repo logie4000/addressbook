@@ -9,6 +9,8 @@ import {
   Address,
   fullCityStateZip,
   fullStreetAddress,
+  sentYear,
+  todayIso,
 } from '../../models/address';
 
 export type AddressView = 'cards' | 'list';
@@ -22,6 +24,7 @@ export type AddressView = 'cards' | 'list';
 })
 export class AddressListComponent extends ModelListComponent<Address> {
   readonly currentYear = String(new Date().getFullYear());
+  readonly sentYear = sentYear;
 
   /** Ids of addresses with a mark-sent or delete request in flight. */
   busy = signal<ReadonlySet<string>>(new Set());
@@ -39,13 +42,13 @@ export class AddressListComponent extends ModelListComponent<Address> {
     });
   }
 
-  /** Sets Last sent to this year (the browser's year), then refreshes. */
+  /** Sets Last sent to today (in the browser's time zone), then refreshes. */
   markSent(address: Address): void {
     if (this.busy().has(address.id)) {
       return;
     }
     this.setBusy(address.id, true);
-    this.itemService.update(address.id, { address: { lastSent: this.currentYear } }).subscribe({
+    this.itemService.update(address.id, { address: { lastSent: todayIso() } }).subscribe({
       next: () => {
         this.setBusy(address.id, false);
         this.changes.notify();

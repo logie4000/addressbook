@@ -6,7 +6,7 @@ class Legacy::MysqlDumpReaderTest < ActiveSupport::TestCase
 
     assert_equal %w[addresses people], tables.keys.sort
     assert_equal 3, tables["addresses"].size
-    assert_equal 7, tables["people"].size
+    assert_equal 8, tables["people"].size
 
     ann = tables["people"].first
     assert_equal({ "id" => 1, "lastName" => "O'Neill", "firstName" => "Ann", "address_id" => 1, "parent_id" => nil,

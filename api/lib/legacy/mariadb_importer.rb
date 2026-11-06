@@ -12,10 +12,13 @@
 #     and children get the household's address, the spouse points back at
 #     the addressee, children of the spouse hang off the addressee, and a
 #     child with no last name takes the household's
-#   - people listed in `skip` (old ids) left out, with links to them dropped
+#   - people in no household at all (no address, not anyone's spouse or
+#     child) left out, with links to them dropped
+#   - people listed in `skip` (old ids) left out the same way
+#   - lastSent, a year in the old app, stored as December 21 of that year
 #
-# Things that look wrong but are kept as they are (placeholders, people in
-# no household, possible duplicates) are listed in the report for review.
+# Things that look wrong but are kept as they are (placeholders, possible
+# duplicates) are listed in the report for review.
 module Legacy
   class MariadbImporter
     # Fixed namespace for the derived ids. Never change it: a re-run would
@@ -123,7 +126,14 @@ module Legacy
       def build
         drop_dangling_links
         complete_households
+        drop_orphans
         review_leftovers
+
+        @address_rows.each_value do |row|
+          next unless row["lastSent"].to_s.match?(/\A\d{4}\z/)
+
+          @report.changes["Last sent year stored as December 21 of that year"] << "#{address_label(row)}: #{row['lastSent']}"
+        end
 
         @addresses = @address_rows.values.map { |row| address_attributes(row) }
         @people = @person_rows.values.map { |row| person_attributes(row) }
@@ -214,6 +224,23 @@ module Legacy
         end
       end
 
+      # People still without an address after the households were completed
+      # belong to no household, so they are left out.
+      def drop_orphans
+        orphans = @person_rows.select { |_, person| person["address_id"].nil? }
+        orphans.each_value { |person| @report.changes["Left out: in no household"] << label(person) }
+        @person_rows.except!(*orphans.keys)
+
+        @person_rows.each_value do |person|
+          %w[spouse_id parent_id].each do |field|
+            next unless orphans.key?(person[field])
+
+            @report.changes["Link to a left-out person dropped"] << "#{label(person)}: #{field} #{person[field]}"
+            person[field] = nil
+          end
+        end
+      end
+
       def review_leftovers
         @person_rows.each_value do |person|
           if [ person["firstName"], person["lastName"] ].compact.empty?
@@ -222,8 +249,9 @@ module Legacy
             @report.review["Placeholder name"] << label(person)
           end
 
-          in_household = person["address_id"] && @households.key?(person["address_id"])
-          @report.review["Not in any household"] << label(person) unless in_household
+          unless @households.key?(person["address_id"])
+            @report.review["Lives at an address with no addressee"] << label(person)
+          end
         end
 
         @person_rows.values.group_by { |p| [ p["firstName"]&.downcase, p["lastName"]&.downcase ] }.each do |(first, last), group|
@@ -252,7 +280,7 @@ module Legacy
         {
           id: self.class.address_id(row["id"]),
           street1: row["street1"], street2: row["street2"], city: row["city"], state: row["state"],
-          zip: row["zip"], comments: row["comments"], lastSent: row["lastSent"],
+          zip: row["zip"], comments: row["comments"], lastSent: Address.sent_date(row["lastSent"]),
           addressee_id: row["addressee_id"] && self.class.person_id(row["addressee_id"]),
           created_at: time(row["created_at"]), updated_at: time(row["updated_at"])
         }

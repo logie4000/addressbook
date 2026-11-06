@@ -19,7 +19,7 @@
         <span class="street">{{ getStreetAddress(address) }}</span>
         <span class="city">{{ getCityStateZip(address) }}</span>
         <span class="sent">
-          <span class="year">{{ address.lastSent || '—' }}</span>
+          <span class="year">{{ sentYear(address) || '—' }}</span>
           <span class="row-actions">
             <button type="button" class="icon-button small" title="Edit" [attr.aria-label]="'Edit ' + getListName(address)" (click)="editAddress(address)">
               <app-icon name="edit" />
@@ -27,7 +27,7 @@
             <button type="button" class="icon-button small danger" title="Delete" [attr.aria-label]="'Delete ' + getListName(address)" [disabled]="busy().has(address.id)" (click)="deleteAddress(address)">
               <app-icon name="delete" />
             </button>
-            @let sentThisYear = address.lastSent === currentYear;
+            @let sentThisYear = sentYear(address) === currentYear;
             <button
               type="button"
               class="icon-button small mark"
@@ -59,7 +59,7 @@
             <span>{{ getCityStateZip(address) }}</span>
           </address>
           @if (address.lastSent) {
-            <p class="last-sent">Last sent {{ address.lastSent }}</p>
+            <p class="last-sent">Last sent {{ sentYear(address) }}</p>
           }
         </a>
       </li>

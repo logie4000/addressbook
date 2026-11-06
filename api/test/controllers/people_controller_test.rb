@@ -131,7 +131,7 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     address = Address.find(@address.id)
     assert_equal "2 Main St", address.street1
     assert_equal "New gate code", address.comments
-    assert_equal "2026", address.lastSent
+    assert_equal Date.new(2026, 12, 21), address.lastSent
     assert_equal "Robert", Person.find(@spouse.id).firstName
   end
 
