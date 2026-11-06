@@ -1,7 +1,13 @@
 <div class="split" [class.with-panel]="panelOpen()">
-  <section class="list">
-    <h1>Addresses</h1>
-    <app-address-list [itemList]="getValues()" />
+  <section class="list-area">
+    <div class="list-heading">
+      <h1>Addresses</h1>
+      <div class="view-switch" role="group" aria-label="View">
+        <button type="button" [class.active]="view() === 'cards'" [attr.aria-pressed]="view() === 'cards'" (click)="setView('cards')">Cards</button>
+        <button type="button" [class.active]="view() === 'list'" [attr.aria-pressed]="view() === 'list'" (click)="setView('list')">List</button>
+      </div>
+    </div>
+    <app-address-list [itemList]="getValues()" [view]="view()" />
   </section>
 
   <aside class="panel" [hidden]="!panelOpen()" aria-label="Address details">

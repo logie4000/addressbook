@@ -1,21 +1,42 @@
-<ul class="cards">
-  @for (address of itemList(); track address.id) {
-    <li>
-      <a class="card" [routerLink]="getUrl(address)" routerLinkActive="selected" [ariaCurrentWhenActive]="true">
-        <h2 class="household">{{ getResident(address) }}</h2>
-        @if (getFirstNames(address); as names) {
-          <p class="names">{{ names }}</p>
-        }
-        <address>
-          <span class="street">{{ getStreetAddress(address) }}</span>
-          <span>{{ getCityStateZip(address) }}</span>
-        </address>
-        @if (address.lastSent) {
-          <p class="last-sent">Last sent {{ address.lastSent }}</p>
-        }
+@if (view() === 'list') {
+  <div class="list" role="list">
+    <div class="list-header" aria-hidden="true">
+      <span>Name</span>
+      <span>Street address</span>
+      <span>City, State ZIP</span>
+      <span class="sent">Last sent</span>
+    </div>
+    @for (address of sorted(); track address.id) {
+      <a class="row" role="listitem" [routerLink]="getUrl(address)" routerLinkActive="selected" [ariaCurrentWhenActive]="true">
+        <span class="name">{{ getListName(address) }}</span>
+        <span class="street">{{ getStreetAddress(address) }}</span>
+        <span class="city">{{ getCityStateZip(address) }}</span>
+        <span class="sent">{{ address.lastSent || '—' }}</span>
       </a>
-    </li>
-  } @empty {
-    <li class="empty">No addresses yet.</li>
-  }
-</ul>
+    } @empty {
+      <p class="empty">No addresses yet.</p>
+    }
+  </div>
+} @else {
+  <ul class="cards">
+    @for (address of sorted(); track address.id) {
+      <li>
+        <a class="card" [routerLink]="getUrl(address)" routerLinkActive="selected" [ariaCurrentWhenActive]="true">
+          <h2 class="household">{{ getResident(address) }}</h2>
+          @if (getFirstNames(address); as names) {
+            <p class="names">{{ names }}</p>
+          }
+          <address>
+            <span class="street">{{ getStreetAddress(address) }}</span>
+            <span>{{ getCityStateZip(address) }}</span>
+          </address>
+          @if (address.lastSent) {
+            <p class="last-sent">Last sent {{ address.lastSent }}</p>
+          }
+        </a>
+      </li>
+    } @empty {
+      <li class="empty">No addresses yet.</li>
+    }
+  </ul>
+}

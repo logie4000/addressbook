@@ -9,6 +9,42 @@
   grid-template-columns: minmax(0, 1fr) minmax(18rem, 26rem);
 }
 
+.list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.view-switch {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.view-switch button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.35rem 0.9rem;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.view-switch button + button {
+  border-left: 1px solid var(--color-border);
+}
+
+.view-switch button.active {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
 .panel {
   position: sticky;
   top: 1rem;

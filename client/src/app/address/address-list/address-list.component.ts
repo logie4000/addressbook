@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, input } from '@angular/core';
 import { ModelListComponent } from '../../shared/model-list.component';
 import { AddressService } from '../../models/address.service';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -8,6 +8,8 @@ import {
   fullStreetAddress,
 } from '../../models/address';
 
+export type AddressView = 'cards' | 'list';
+
 @Component({
   selector: 'app-address-list',
   imports: [RouterLink, RouterLinkActive],
@@ -16,6 +18,17 @@ import {
   styleUrl: './address-list.component.css',
 })
 export class AddressListComponent extends ModelListComponent<Address> {
+  /** Cards in a grid, or one row per address. */
+  view = input<AddressView>('cards');
+
+  /** Addresses ordered by the addressee's last name, then first name. */
+  sorted = computed(() =>
+    [...(this.itemList() ?? [])].sort(
+      (a, b) =>
+        compareText(a.addressee?.lastName, b.addressee?.lastName) ||
+        compareText(a.addressee?.firstName, b.addressee?.firstName),
+    ),
+  );
   constructor(
     protected override itemService: AddressService,
     protected override router: Router,
@@ -41,6 +54,32 @@ export class AddressListComponent extends ModelListComponent<Address> {
     return names.filter((name) => !!name).join(' & ');
   }
 
+  /** "Martin, Alice (Ben)", or "Rivera, Carlos (Dana Smith)" when the spouse's last name differs. */
+  getListName(address: Address): string {
+    const person = address.addressee;
+    if (!person) {
+      return '(no addressee)';
+    }
+
+    let name = [person.lastName, person.firstName].filter((part) => !!part).join(', ');
+    if (person.suffix) {
+      name += ` ${person.suffix}`;
+    }
+
+    const spouse = person.spouse;
+    if (spouse) {
+      const spouseName =
+        spouse.lastName && spouse.lastName !== person.lastName
+          ? `${spouse.firstName} ${spouse.lastName}`
+          : spouse.firstName;
+      if (spouseName) {
+        name += ` (${spouseName})`;
+      }
+    }
+
+    return name;
+  }
+
   getStreetAddress(address: Address) {
     return `${fullStreetAddress(address)}`;
   }
@@ -48,4 +87,8 @@ export class AddressListComponent extends ModelListComponent<Address> {
   getCityStateZip(address: Address) {
     return `${fullCityStateZip(address)}`;
   }
+}
+
+function compareText(a: string | undefined, b: string | undefined): number {
+  return (a ?? '').localeCompare(b ?? '', undefined, { sensitivity: 'base' });
 }
