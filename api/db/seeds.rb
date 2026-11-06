@@ -8,20 +8,20 @@
 HOUSEHOLDS = [
   {
     address: { street1: "12 Elm Street", city: "Springfield", state: "IL", zip: "62701",
-               lastSent: "2025", comments: "Prefers cards over email" },
+               lastSent: "2025-12-21", comments: "Prefers cards over email" },
     addressee: { firstName: "Alice", lastName: "Martin" },
     spouse: { firstName: "Ben", lastName: "Martin" },
     children: [ { firstName: "Chloe", lastName: "Martin" }, { firstName: "Danny", lastName: "Martin" } ]
   },
   {
     address: { street1: "400 Lakeview Drive", street2: "Apt 3B", city: "Madison", state: "WI", zip: "53703",
-               lastSent: "2024" },
+               lastSent: "2024-12-21" },
     addressee: { firstName: "Carlos", lastName: "Rivera", suffix: "Jr." },
     spouse: { firstName: "Dana", lastName: "Rivera" },
     children: [ { firstName: "Elena", lastName: "Rivera" } ]
   },
   {
-    address: { street1: "7 Harbor Road", city: "Portland", state: "ME", zip: "04101", lastSent: "2025" },
+    address: { street1: "7 Harbor Road", city: "Portland", state: "ME", zip: "04101", lastSent: "2025-12-21" },
     addressee: { firstName: "Grace", lastName: "Okafor" }
   },
   {
@@ -31,7 +31,7 @@ HOUSEHOLDS = [
     spouse: { firstName: "Iris", lastName: "Nguyen" }
   },
   {
-    address: { street1: "88 Birch Court", city: "Boulder", state: "CO", zip: "80302", lastSent: "2023" },
+    address: { street1: "88 Birch Court", city: "Boulder", state: "CO", zip: "80302", lastSent: "2023-12-21" },
     addressee: { firstName: "Julia", lastName: "Schmidt" },
     children: [ { firstName: "Kai", lastName: "Schmidt" }, { firstName: "Lena", lastName: "Schmidt" },
                 { firstName: "Max", lastName: "Schmidt" } ]
