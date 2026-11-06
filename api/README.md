@@ -32,9 +32,18 @@ Start DynamoDB Local, create the tables, and run the server:
 ```sh
 docker run -d -p 8000:8000 amazon/dynamodb-local:2.6.1
 export DYNAMODB_ENDPOINT=http://localhost:8000
-bin/rails dynamodb:create_tables
+bin/rails dynamodb:seed      # creates the tables and adds sample data
 bin/rails server
 ```
+
+`dynamodb:seed` fills empty tables with five made-up households from
+[`db/seeds.rb`](db/seeds.rb) and leaves tables that already have data alone.
+`bin/rails dynamodb:reset` wipes the local tables and loads the sample data
+again. Neither runs against production.
+
+On Windows PowerShell, set the endpoint with
+`$env:DYNAMODB_ENDPOINT = "http://localhost:8000"` and run the commands as
+`ruby bin/rails ...`.
 
 Or run the whole stack with `docker compose up` from the repository root.
 
