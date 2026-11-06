@@ -8,14 +8,21 @@ class Api::V1::AddressesController < ApplicationController
   # Reads both tables once and joins them in memory, rather than making a
   # DynamoDB request per address.
   def index
-    people = Person.all.index_by(&:id)
+    all_people = Person.all.to_a
+    people = all_people.index_by(&:id)
+    children_by_parent = all_people.group_by(&:parent_id)
 
     addresses = Address.all.map do |address|
       addressee = people[address.addressee_id]
       spouse = addressee && people[addressee.spouse_id]
+      # Children hang off one parent; check the spouse too, as show does.
+      children = addressee && (children_by_parent[addressee.id] || (spouse && children_by_parent[spouse.id]))
 
       address.attributes.stringify_keys.slice(*INDEX_FIELDS).merge(
-        "addressee" => addressee && name_fields(addressee).merge("spouse" => spouse && name_fields(spouse))
+        "addressee" => addressee && name_fields(addressee).merge(
+          "spouse" => spouse && name_fields(spouse),
+          "children" => Array(children).map { |child| name_fields(child) }
+        )
       )
     end
 

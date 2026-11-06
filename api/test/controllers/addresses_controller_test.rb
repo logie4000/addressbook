@@ -24,6 +24,8 @@ class AddressesControllerTest < ActionDispatch::IntegrationTest
     assert_equal @addressee.id, body.last["addressee_id"]
     assert_equal "2025", body.last["lastSent"]
     assert_nil body.last["comments"], "the list leaves out the comments"
+    assert_equal [ "Cal" ], body.last.dig("addressee", "children").map { |c| c["firstName"] }
+    assert_equal [], body.first.dig("addressee", "children")
   end
 
   test "should create address" do

@@ -8,7 +8,12 @@
     </div>
     @for (address of sorted(); track address.id) {
       <a class="row" role="listitem" [routerLink]="getUrl(address)" routerLinkActive="selected" [ariaCurrentWhenActive]="true">
-        <span class="name">{{ getListName(address) }}</span>
+        <span class="name">
+          {{ getListName(address) }}
+          @if (getChildNames(address); as children) {
+            <span class="children">{{ children }}</span>
+          }
+        </span>
         <span class="street">{{ getStreetAddress(address) }}</span>
         <span class="city">{{ getCityStateZip(address) }}</span>
         <span class="sent">{{ address.lastSent || '—' }}</span>

@@ -231,6 +231,14 @@ h1 {
   font-weight: 600;
 }
 
+/* Children, on a lighter line under the household's names. */
+.row .name .children {
+  display: block;
+  font-weight: 400;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
 .row-list .empty {
   margin: 0;
   padding: 1rem;

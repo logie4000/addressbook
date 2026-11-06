@@ -81,6 +81,21 @@ export class AddressListComponent extends ModelListComponent<Address> {
     return name;
   }
 
+  /** "Chloe, Danny": a child's last name only when it differs from the addressee's. */
+  getChildNames(address: Address): string {
+    const person = address.addressee;
+    // Alphabetical, since the API returns children in no particular order.
+    return [...(person?.children ?? [])]
+      .sort((a, b) => compareText(a.firstName, b.firstName))
+      .map((child) =>
+        child.lastName && child.lastName !== person!.lastName
+          ? `${child.firstName} ${child.lastName}`
+          : child.firstName,
+      )
+      .filter((name) => !!name)
+      .join(', ');
+  }
+
   getStreetAddress(address: Address) {
     return `${fullStreetAddress(address)}`;
   }
