@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PersonComponent } from './person.component';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { routes } from '../app.routes';
@@ -13,13 +13,12 @@ describe('PersonComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [
-          provideHttpClient(),
-          provideHttpClientTesting(),
-          provideRouter(routes),
+        provideHttpClient(withXhr()),
+        provideHttpClientTesting(),
+        provideRouter(routes),
       ],
-      imports: [PersonComponent]
-    })
-    .compileComponents();
+      imports: [PersonComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PersonComponent);
     component = fixture.componentInstance;

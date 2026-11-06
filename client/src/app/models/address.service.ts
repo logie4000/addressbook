@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { ModelService } from "./model.service";
 import { Address } from "./address";
 
-import * as config from '../app.config'
+import * as config from '../app.constants'
 
 @Injectable({
   providedIn: 'root'

@@ -31,6 +31,10 @@ updates:
       update-types: ["version-update:semver-major"]
     - dependency-name: "typescript"
       update-types: ["version-update:semver-major", "version-update:semver-minor"]
+    # karma-jasmine 5 only works with Jasmine 5. Revisit when the tests move
+    # from Karma to Angular's newer Vitest runner.
+    - dependency-name: "jasmine-core"
+      update-types: ["version-update:semver-major"]
     # Tracks the Angular major version.
     - dependency-name: "angular-oauth2-oidc"
       update-types: ["version-update:semver-major"]

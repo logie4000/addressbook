@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { ModelService } from '../models/model.service';
 
@@ -6,14 +6,16 @@ import { ModelService } from '../models/model.service';
   selector: 'app-model-list',
   imports: [],
   template: '',
-  styleUrls: []
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrls: [],
 })
 export abstract class ModelListComponent<Model> {
   itemList = input<Model[] | undefined>([]);
 
-  constructor(protected itemService: ModelService<Model>, protected router: Router) {
-
-  }
+  constructor(
+    protected itemService: ModelService<Model>,
+    protected router: Router,
+  ) {}
 
   onRowClick(item: Model) {
     this.router.navigate([this.itemService.itemUrl(item)]);
