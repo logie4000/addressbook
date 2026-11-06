@@ -26,6 +26,8 @@ export type AddressView = 'cards' | 'list';
 export class AddressListComponent extends ModelListComponent<Address> {
   readonly currentYear = String(new Date().getFullYear());
   readonly sentYear = sentYear;
+  /** Shown on the printed page. */
+  readonly today = new Date();
 
   /** Ids of addresses with a mark-sent or delete request in flight. */
   busy = signal<ReadonlySet<string>>(new Set());

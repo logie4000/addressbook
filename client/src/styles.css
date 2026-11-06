@@ -568,3 +568,16 @@ h1 {
     margin-top: 0.125rem;
   }
 }
+
+/* --- Printing ------------------------------------------------------------- */
+
+@page {
+  margin: 12mm;
+}
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+}

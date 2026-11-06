@@ -11,3 +11,4 @@ export const HOST_PEOPLE_SERVICE = 'people';
 
 export const DB_ADDRESS_SERVICE = `${REST_DB_PATH}/${HOST_ADDRESS_SERVICE}`;
 export const DB_PEOPLE_SERVICE = `${REST_DB_PATH}/${HOST_PEOPLE_SERVICE}`;
+export const DB_HOUSEHOLDS_SERVICE = `${REST_DB_PATH}/households`;

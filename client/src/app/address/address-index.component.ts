@@ -1,10 +1,14 @@
-import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { IconComponent } from '../shared/icon/icon.component';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { ModelIndexComponent } from '../shared/model-index.component';
 import { Address } from '../models/address';
 import { AddressService } from '../models/address.service';
 import { AddressListComponent, AddressView } from './address-list/address-list.component';
+import { HouseholdService } from '../models/household';
+import { householdsToVCard } from '../shared/vcard';
+import { saveFile } from '../shared/save-file';
+import { todayIso } from '../models/address';
 
 const VIEW_KEY = 'addressbook.addressView';
 
@@ -29,6 +33,35 @@ export class AddressIndexComponent extends ModelIndexComponent<Address> {
     } catch {
       // Storage unavailable (e.g. private browsing): the choice lasts until reload.
     }
+  }
+
+  /** True while an export is downloading. */
+  exporting = signal(false);
+  private households = inject(HouseholdService);
+
+  /** Saves the whole address book: the app's JSON format, or vCard 3.0 for contact apps. */
+  export(kind: 'json' | 'vcard'): void {
+    this.exporting.set(true);
+    this.households.exportAll().subscribe({
+      next: (file) => {
+        this.exporting.set(false);
+        const name = `address-book-${todayIso()}`;
+        if (kind === 'json') {
+          saveFile(`${name}.json`, JSON.stringify(file, null, 2), 'application/json');
+        } else {
+          saveFile(`${name}.vcf`, householdsToVCard(file.households), 'text/vcard');
+        }
+      },
+      error: () => {
+        this.exporting.set(false);
+        window.alert("The address book couldn't be exported. Please try again.");
+      },
+    });
+  }
+
+  /** Prints the compact paper layout (see the print styles). */
+  print(): void {
+    window.print();
   }
 
   constructor(protected override modelService: AddressService) {

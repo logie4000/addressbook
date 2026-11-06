@@ -90,6 +90,17 @@ describe('AddressListComponent', () => {
       ]);
     });
 
+    it('has a compact table for printing, with the same order', () => {
+      const printed = Array.from(fixture.nativeElement.querySelectorAll('table.print-sheet tbody tr') as NodeListOf<HTMLElement>)
+        .map((row) => Array.from(row.querySelectorAll('.name, .children, .street, .city, td.sent')).map((cell) => cell.textContent!.trim()));
+
+      expect(printed).toEqual([
+        ['martin, Alice (Ben)', '12 Elm Street', 'Springfield, IL 62701', ''],
+        ['Okafor, Grace', '7 Harbor Road', 'Portland, ME 04101', 'Dec 2025'],
+        ['Rivera, Carlos (Dana Smith)', 'Elena, Sam Smith', '400 Lakeview Drive', 'Madison, WI 53703', 'Dec 2024'],
+      ]);
+    });
+
     it('lists the children under the names, with differing last names only', () => {
       const children = Array.from(fixture.nativeElement.querySelectorAll('.row-list .row') as NodeListOf<HTMLElement>)
         .map((row) => row.querySelector('.name .children')?.textContent?.trim() ?? null);

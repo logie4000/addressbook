@@ -125,3 +125,24 @@
   padding: 0 1rem;
   text-align: center;
 }
+
+/* --- Printing: only the page content, full width ------------------------- */
+
+@media print {
+  :host {
+    min-height: 0;
+  }
+
+  .titlebar,
+  .sidebar {
+    display: none;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .content {
+    padding: 0;
+  }
+}

@@ -9,7 +9,9 @@ export type IconName =
   | 'cards'
   | 'list'
   | 'sign-out'
-  | 'mail';
+  | 'mail'
+  | 'download'
+  | 'print';
 
 /** Outline icons on a 24×24 grid, drawn with the current text color. */
 const PATHS: Record<IconName, string[]> = {
@@ -21,6 +23,8 @@ const PATHS: Record<IconName, string[]> = {
   cards: ['M3 3h7v7H3z', 'M14 3h7v7h-7z', 'M3 14h7v7H3z', 'M14 14h7v7h-7z'],
   list: ['M8 6h13', 'M8 12h13', 'M8 18h13', 'M3 6h.01', 'M3 12h.01', 'M3 18h.01'],
   mail: ['M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z', 'm3 7 9 6 9-6'],
+  download: ['M12 3v12', 'm7 10 5 5 5-5', 'M5 21h14'],
+  print: ['M6 9V3h12v6', 'M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2', 'M6 14h12v7H6z'],
   'sign-out': ['M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4', 'M16 17l5-5-5-5', 'M21 12H9'],
 };
 
