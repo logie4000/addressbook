@@ -34,7 +34,7 @@ describe('Address routes', () => {
     for (let round = 0; round < 3; round++) {
       http.match(() => true).forEach((req) =>
         req.flush(req.request.url.endsWith('/1')
-          ? { ...ADDRESS_1, street1: '12 Elm Street', lastSent: '2025' }
+          ? { ...ADDRESS_1, street1: '12 Elm Street', lastSent: '2025-12-21' }
           : [ADDRESS_1]));
       await harness.fixture.whenStable();
       harness.detectChanges();
@@ -43,6 +43,7 @@ describe('Address routes', () => {
     expect(panel().hidden).toBeFalse();
     expect(panel().textContent).toContain('12 Elm Street');
     expect(panel().textContent).toContain('Last sent');
+    expect(panel().textContent).toContain('December 21, 2025');
     expect(harness.routeNativeElement!.querySelector('a.card.selected')).not.toBeNull();
   });
 

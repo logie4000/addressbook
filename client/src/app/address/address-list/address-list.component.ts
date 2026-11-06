@@ -5,23 +5,27 @@ import { ModelListComponent } from '../../shared/model-list.component';
 import { compareText } from '../../shared/compare-text';
 import { AddressService } from '../../models/address.service';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { DatePipe } from '@angular/common';
 import {
   Address,
   fullCityStateZip,
   fullStreetAddress,
+  sentYear,
+  todayIso,
 } from '../../models/address';
 
 export type AddressView = 'cards' | 'list';
 
 @Component({
   selector: 'app-address-list',
-  imports: [RouterLink, RouterLinkActive, IconComponent],
+  imports: [RouterLink, RouterLinkActive, DatePipe, IconComponent],
   templateUrl: './address-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './address-list.component.css',
 })
 export class AddressListComponent extends ModelListComponent<Address> {
   readonly currentYear = String(new Date().getFullYear());
+  readonly sentYear = sentYear;
 
   /** Ids of addresses with a mark-sent or delete request in flight. */
   busy = signal<ReadonlySet<string>>(new Set());
@@ -39,13 +43,13 @@ export class AddressListComponent extends ModelListComponent<Address> {
     });
   }
 
-  /** Sets Last sent to this year (the browser's year), then refreshes. */
+  /** Sets Last sent to today (in the browser's time zone), then refreshes. */
   markSent(address: Address): void {
     if (this.busy().has(address.id)) {
       return;
     }
     this.setBusy(address.id, true);
-    this.itemService.update(address.id, { address: { lastSent: this.currentYear } }).subscribe({
+    this.itemService.update(address.id, { address: { lastSent: todayIso() } }).subscribe({
       next: () => {
         this.setBusy(address.id, false);
         this.changes.notify();

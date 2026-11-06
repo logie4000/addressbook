@@ -22,7 +22,7 @@ class AddressesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Bob", body.last.dig("addressee", "spouse", "firstName")
     assert_equal @address.id, body.last["id"]
     assert_equal @addressee.id, body.last["addressee_id"]
-    assert_equal "2025", body.last["lastSent"]
+    assert_equal "2025-12-21", body.last["lastSent"], "a bare year is stored as December 21"
     assert_nil body.last["comments"], "the list leaves out the comments"
     assert_equal [ "Cal" ], body.last.dig("addressee", "children").map { |c| c["firstName"] }
     assert_equal [], body.first.dig("addressee", "children")
@@ -62,11 +62,11 @@ class AddressesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update last sent and notes" do
-    patch api_v1_address_url(@address), params: { address: { lastSent: "2025", comments: "Moved in March" } }, as: :json
+    patch api_v1_address_url(@address), params: { address: { lastSent: "2025-06-30", comments: "Moved in March" } }, as: :json
     assert_response :success
 
     address = Address.find(@address.id)
-    assert_equal "2025", address.lastSent
+    assert_equal Date.new(2025, 6, 30), address.lastSent
     assert_equal "Moved in March", address.comments
   end
 

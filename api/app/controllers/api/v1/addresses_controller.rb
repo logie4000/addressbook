@@ -71,7 +71,7 @@ class Api::V1::AddressesController < ApplicationController
 
   def mark_sent
     @address = Address.find(params[:id])
-    @address.lastSent = Date.today.year.to_s
+    @address.lastSent = Date.current
 
     if @address.save
       render json: @address

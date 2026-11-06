@@ -8,8 +8,20 @@ export interface Address {
   state: string,
   zip: string,
   comments: string,
-  lastSent: string,
+  /** Date a card was last sent, as YYYY-MM-DD (or null). */
+  lastSent: string | null,
   addressee: Person | undefined,
+}
+
+/** The year of Last sent, e.g. "2025", or "" if never sent. */
+export function sentYear(address: Address): string {
+  return address?.lastSent ? address.lastSent.slice(0, 4) : '';
+}
+
+/** Today's date in the browser's time zone, as YYYY-MM-DD. */
+export function todayIso(now = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
 export function fullStreetAddress (address: Address) {

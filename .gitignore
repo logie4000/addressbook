@@ -12,3 +12,6 @@
 
 # AWS SAM build output
 .aws-sam/
+
+# Old MariaDB dumps for the one-time import (real personal data)
+/legacy*.sql

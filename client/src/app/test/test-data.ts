@@ -9,7 +9,7 @@ export const ADDRESS_1: Address = {
   state: "",
   zip: "",
   comments: "",
-  lastSent: "",
+  lastSent: null,
   addressee: {
     id: "",
     lastName: "",
@@ -30,7 +30,7 @@ export const ADDRESS_2: Address = {
   state: "",
   zip: "",
   comments: "",
-  lastSent: "",
+  lastSent: null,
   addressee: {
     id: "",
     lastName: "",

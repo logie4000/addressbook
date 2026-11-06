@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModelComponent } from '../shared/model.component';
@@ -16,7 +17,7 @@ import { HouseholdFieldsComponent } from '../shared/household/household-fields.c
 
 @Component({
   selector: 'app-address',
-  imports: [ReactiveFormsModule, IconComponent, HouseholdFieldsComponent],
+  imports: [ReactiveFormsModule, DatePipe, IconComponent, HouseholdFieldsComponent],
   templateUrl: './address.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './address.component.css',

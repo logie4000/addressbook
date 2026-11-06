@@ -36,7 +36,7 @@
       </div>
       <label class="medium">
         Last sent
-        <input formControlName="lastSent" inputmode="numeric" placeholder="e.g. 2025" />
+        <input type="date" formControlName="lastSent" />
       </label>
       <label>
         Notes
@@ -91,7 +91,7 @@
       <dl>
         @if (address.lastSent) {
           <dt>Last sent</dt>
-          <dd>{{ address.lastSent }}</dd>
+          <dd>{{ address.lastSent | date: 'longDate' }}</dd>
         }
         @if (address.comments) {
           <dt>Notes</dt>

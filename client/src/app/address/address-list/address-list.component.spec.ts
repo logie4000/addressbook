@@ -7,6 +7,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { DataChangesService } from '../../shared/service/data-changes.service';
 import { provideRouter, Router } from '@angular/router';
 import { ADDRESS_1 } from '../../test/test-data';
+import { todayIso } from '../../models/address';
 
 describe('AddressListComponent', () => {
   let component: AddressListComponent;
@@ -33,7 +34,7 @@ describe('AddressListComponent', () => {
       street1: '12 Elm Street',
       city: 'Springfield',
       state: 'IL',
-      lastSent: '2025',
+      lastSent: '2025-12-21',
       addressee: { ...ADDRESS_1.addressee!, firstName: 'Alice', lastName: 'Martin' },
     };
     fixture.componentRef.setInput('itemList', [address]);
@@ -46,7 +47,7 @@ describe('AddressListComponent', () => {
     expect(text).toContain('Martin');
     expect(text).toContain('12 Elm Street');
     expect(text).toContain('Springfield, IL');
-    expect(text).toContain('Last sent 2025');
+    expect(text).toContain('Last sent Dec 2025');
   });
 
   it('says so when there are no addresses', () => {
@@ -68,12 +69,12 @@ describe('AddressListComponent', () => {
       fixture.componentRef.setInput('view', 'list');
       fixture.componentRef.setInput('itemList', [
         { ...ADDRESS_1, id: 'r', street1: '400 Lakeview Drive', city: 'Madison', state: 'WI', zip: '53703',
-          lastSent: '2024', addressee: { ...person('Carlos', 'Rivera', { firstName: 'Dana', lastName: 'Smith' }),
+          lastSent: '2024-12-21', addressee: { ...person('Carlos', 'Rivera', { firstName: 'Dana', lastName: 'Smith' }),
             children: [person('Elena', 'Rivera'), person('Sam', 'Smith')] } },
         { ...ADDRESS_1, id: 'm', street1: '12 Elm Street', city: 'Springfield', state: 'IL', zip: '62701',
           lastSent: '', addressee: person('Alice', 'martin', { firstName: 'Ben', lastName: 'martin' }) },
         { ...ADDRESS_1, id: 'o', street1: '7 Harbor Road', city: 'Portland', state: 'ME', zip: '04101',
-          lastSent: '2025', addressee: person('Grace', 'Okafor') },
+          lastSent: '2025-12-21', addressee: person('Grace', 'Okafor') },
       ]);
       fixture.detectChanges();
     });
@@ -84,8 +85,8 @@ describe('AddressListComponent', () => {
     it('shows one row per address, ordered by last name', () => {
       expect(rows()).toEqual([
         ['martin, Alice (Ben)', '12 Elm Street', 'Springfield, IL 62701', '—'],
-        ['Okafor, Grace', '7 Harbor Road', 'Portland, ME 04101', '2025'],
-        ['Rivera, Carlos (Dana Smith)', '400 Lakeview Drive', 'Madison, WI 53703', '2024'],
+        ['Okafor, Grace', '7 Harbor Road', 'Portland, ME 04101', 'Dec 2025'],
+        ['Rivera, Carlos (Dana Smith)', '400 Lakeview Drive', 'Madison, WI 53703', 'Dec 2024'],
       ]);
     });
 
@@ -109,7 +110,7 @@ describe('AddressListComponent', () => {
 
       const req = http.expectOne((r) => r.method === 'PATCH');
       expect(req.request.url).toMatch(/addresses\/o$/);
-      expect(req.request.body).toEqual({ address: { lastSent: year } });
+      expect(req.request.body).toEqual({ address: { lastSent: todayIso() } });
       req.flush({});
       expect(changes.version()).toBe(1);
     });
@@ -140,7 +141,7 @@ describe('AddressListComponent', () => {
 
     it('shows when an address was already sent this year', () => {
       const year = String(new Date().getFullYear());
-      fixture.componentRef.setInput('itemList', [{ ...ADDRESS_1, id: 'x', lastSent: year }]);
+      fixture.componentRef.setInput('itemList', [{ ...ADDRESS_1, id: 'x', lastSent: `${year}-12-21` }]);
       fixture.detectChanges();
       const button = fixture.nativeElement.querySelector('.row button.mark') as HTMLButtonElement;
       expect(button.disabled).toBeTrue();
