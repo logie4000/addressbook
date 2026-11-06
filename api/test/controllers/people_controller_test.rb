@@ -102,6 +102,38 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     assert_empty Person.find(@person.id).children
   end
 
+  test "should save a household edit from the panel form" do
+    patch api_v1_person_url(@person), params: { person: {
+      firstName: "Ann", lastName: "Zeta", suffix: "",
+      spouse_attributes: { id: @spouse.id, _destroy: "1" },
+      children_attributes: [
+        { id: @child.id, firstName: "Calvin", lastName: "Zeta" },
+        { firstName: "Dee", lastName: "Zeta" }
+      ]
+    } }, as: :json
+    assert_response :success
+
+    person = Person.find(@person.id)
+    assert_nil person.spouse_id
+    assert_nil Person.find(@spouse.id, raise_error: false)
+    assert_equal %w[ Calvin Dee ], person.children.map(&:firstName).sort
+  end
+
+  test "should add a spouse at the same address" do
+    @person.update_attributes!(spouse_id: nil)
+    @spouse.destroy
+
+    patch api_v1_person_url(@person), params: { person: {
+      spouse_attributes: { firstName: "Bea", lastName: "Zeta" }
+    } }, as: :json
+    assert_response :success
+
+    spouse = Person.find(@person.id).spouse
+    assert_equal "Bea", spouse.firstName
+    assert_equal @person.id, spouse.spouse_id
+    assert_equal @address.id, spouse.address_id
+  end
+
   test "should destroy person" do
     assert_difference("Person.count", -1) do
       delete api_v1_person_url(@spouse), as: :json

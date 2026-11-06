@@ -3,33 +3,100 @@
 } @else if (error()) {
   <p class="muted">This address couldn't be loaded.</p>
 } @else if (model(); as address) {
-  <h2>{{ title() }}</h2>
-  <p class="names">{{ full_resident_name() }}</p>
+  @if (editing()) {
+    <form class="edit-form" [formGroup]="form" (ngSubmit)="saveAddress()">
+      <h2>Edit address</h2>
 
-  <address>
-    <span class="street">{{ street_address() }}</span>
-    <span>{{ city_state_zip() }}</span>
-  </address>
+      <label>
+        Street
+        <input formControlName="street1" autocomplete="address-line1" />
+      </label>
+      <label>
+        Street, line 2
+        <input formControlName="street2" autocomplete="address-line2" />
+      </label>
+      <div class="field-row">
+        <label class="grow">
+          City
+          <input formControlName="city" autocomplete="address-level2" />
+        </label>
+        <label class="short">
+          State
+          <input formControlName="state" autocomplete="address-level1" />
+        </label>
+        <label class="medium">
+          ZIP
+          <input formControlName="zip" autocomplete="postal-code" />
+        </label>
+      </div>
+      <label class="medium">
+        Last sent
+        <input formControlName="lastSent" inputmode="numeric" placeholder="e.g. 2025" />
+      </label>
+      <label>
+        Notes
+        <textarea formControlName="comments" rows="3"></textarea>
+      </label>
 
-  @if (showChildren()) {
-    <h3>Children</h3>
-    <ul class="children">
-      @for (child of child_units(); track child.id) {
-        <li>{{ child.firstName }} {{ child.lastName }}</li>
+      @if (form.touched && form.invalid) {
+        <p class="form-error" role="alert">Street and city are required.</p>
       }
-    </ul>
-  }
+      @if (saveError()) {
+        <p class="form-error" role="alert">{{ saveError() }}</p>
+      }
 
-  @if (address.lastSent || address.comments) {
-    <dl>
-      @if (address.lastSent) {
-        <dt>Last sent</dt>
-        <dd>{{ address.lastSent }}</dd>
-      }
-      @if (address.comments) {
-        <dt>Notes</dt>
-        <dd>{{ address.comments }}</dd>
-      }
-    </dl>
+      <div class="form-actions">
+        <button type="submit" class="icon-button primary" title="Save" aria-label="Save" [disabled]="saving()">
+          <app-icon name="save" />
+        </button>
+        <button type="button" class="icon-button" title="Cancel" aria-label="Cancel" (click)="cancelEdit()">
+          <app-icon name="close" />
+        </button>
+      </div>
+    </form>
+  } @else {
+    <div class="panel-head">
+      <h2>{{ title() }}</h2>
+      <div class="actions">
+        <button type="button" class="icon-button" title="Edit address" aria-label="Edit address" (click)="startEdit()">
+          <app-icon name="edit" />
+        </button>
+        <button type="button" class="icon-button danger" title="Delete address" aria-label="Delete address" [disabled]="saving()" (click)="deleteAddress()">
+          <app-icon name="delete" />
+        </button>
+      </div>
+    </div>
+    <p class="names">{{ full_resident_name() }}</p>
+
+    <address>
+      <span class="street">{{ street_address() }}</span>
+      <span>{{ city_state_zip() }}</span>
+    </address>
+
+    @if (showChildren()) {
+      <h3>Children</h3>
+      <ul class="children">
+        @for (child of child_units(); track child.id) {
+          <li>{{ child.firstName }} {{ child.lastName }}</li>
+        }
+      </ul>
+    }
+
+    @if (address.lastSent || address.comments) {
+      <dl>
+        @if (address.lastSent) {
+          <dt>Last sent</dt>
+          <dd>{{ address.lastSent }}</dd>
+        }
+        @if (address.comments) {
+          <dt>Notes</dt>
+          <dd>{{ address.comments }}</dd>
+        }
+      </dl>
+    }
+
+    @if (saveError()) {
+      <p class="form-error" role="alert">{{ saveError() }}</p>
+    }
   }
 }

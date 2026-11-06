@@ -9,7 +9,7 @@
     @if (auth.enabled) {
       <div class="session">
         <span class="email">{{ auth.email }}</span>
-        <button type="button" (click)="auth.signOut()">Sign out</button>
+        <button type="button" class="sign-out" title="Sign out" aria-label="Sign out" (click)="auth.signOut()"><app-icon name="sign-out" /></button>
       </div>
     }
   </header>

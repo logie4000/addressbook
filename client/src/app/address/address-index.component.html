@@ -3,15 +3,15 @@
     <div class="page-heading">
       <h1>Addresses</h1>
       <div class="view-switch" role="group" aria-label="View">
-        <button type="button" [class.active]="view() === 'cards'" [attr.aria-pressed]="view() === 'cards'" (click)="setView('cards')">Cards</button>
-        <button type="button" [class.active]="view() === 'list'" [attr.aria-pressed]="view() === 'list'" (click)="setView('list')">List</button>
+        <button type="button" title="Cards" aria-label="Cards" [class.active]="view() === 'cards'" [attr.aria-pressed]="view() === 'cards'" (click)="setView('cards')"><app-icon name="cards" /></button>
+        <button type="button" title="List" aria-label="List" [class.active]="view() === 'list'" [attr.aria-pressed]="view() === 'list'" (click)="setView('list')"><app-icon name="list" /></button>
       </div>
     </div>
     <app-address-list [itemList]="getValues()" [view]="view()" />
   </section>
 
   <aside class="panel" [hidden]="!panelOpen()" aria-label="Address details">
-    <a class="close" routerLink="/addresses" aria-label="Close details">&times;</a>
+    <a class="close icon-button" routerLink="/addresses" title="Close" aria-label="Close details"><app-icon name="close" /></a>
     <router-outlet (activate)="panelOpen.set(true)" (deactivate)="panelOpen.set(false)" />
   </aside>
 </div>

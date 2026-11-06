@@ -3,27 +3,135 @@
 } @else if (error()) {
   <p class="muted">This person couldn't be loaded.</p>
 } @else if (model(); as person) {
-  <h2>{{ fullName() }}</h2>
-  @if (person.spouse; as spouse) {
-    <p class="names">Spouse: {{ spouse.firstName }} {{ spouse.lastName }}</p>
-  }
+  @if (editing()) {
+    <form class="edit-form" [formGroup]="form" (ngSubmit)="saveHousehold()">
+      <h2>Edit household</h2>
 
-  @if (person.address; as address) {
-    <address>
-      <span class="street">{{ streetAddress() }}</span>
-      <span>{{ cityStateZip() }}</span>
-    </address>
-    <p><a class="link" [routerLink]="['/addresses', address.id]">View address</a></p>
-  } @else {
-    <p class="muted">No address on file.</p>
-  }
+      <div class="field-row">
+        <label class="grow">
+          First name
+          <input formControlName="firstName" />
+        </label>
+        <label class="grow">
+          Last name
+          <input formControlName="lastName" />
+        </label>
+        <label class="short">
+          Suffix
+          <input formControlName="suffix" />
+        </label>
+      </div>
 
-  @if (person.children.length) {
-    <h3>Children</h3>
-    <ul class="children">
-      @for (child of person.children; track child.id) {
-        <li>{{ child.firstName }} {{ child.lastName }}</li>
+      <div class="section-head">
+        <h3>Spouse</h3>
+        @if (canAddSpouse()) {
+          <button type="button" class="icon-button" title="Add spouse" aria-label="Add spouse" (click)="addSpouse()">
+            <app-icon name="add" />
+          </button>
+        }
+      </div>
+      <div formArrayName="spouse">
+        @for (spouse of spouseArray.controls; track spouse) {
+          <div class="field-row member" [formGroupName]="$index">
+            <label class="grow">
+              First name
+              <input formControlName="firstName" />
+            </label>
+            <label class="grow">
+              Last name
+              <input formControlName="lastName" />
+            </label>
+            <button type="button" class="icon-button danger" title="Remove spouse" aria-label="Remove spouse" (click)="removeSpouse()">
+              <app-icon name="delete" />
+            </button>
+          </div>
+        } @empty {
+          <p class="muted">No spouse.</p>
+        }
+      </div>
+
+      <div class="section-head">
+        <h3>Children</h3>
+        <button type="button" class="icon-button" title="Add child" aria-label="Add child" (click)="addChild()">
+          <app-icon name="add" />
+        </button>
+      </div>
+      <div formArrayName="children">
+        @for (child of childArray.controls; track child) {
+          <div class="field-row member" [formGroupName]="$index">
+            <label class="grow">
+              First name
+              <input formControlName="firstName" />
+            </label>
+            <label class="grow">
+              Last name
+              <input formControlName="lastName" />
+            </label>
+            <button type="button" class="icon-button danger" title="Remove child" [attr.aria-label]="'Remove ' + (child.value.firstName || 'child')" (click)="removeChild($index)">
+              <app-icon name="delete" />
+            </button>
+          </div>
+        } @empty {
+          <p class="muted">No children.</p>
+        }
+      </div>
+
+      @if (removedIds().length) {
+        <p class="muted">Removed people are deleted from the address book when you save.</p>
       }
-    </ul>
+      @if (form.touched && form.invalid) {
+        <p class="form-error" role="alert">Every person needs a first name.</p>
+      }
+      @if (saveError()) {
+        <p class="form-error" role="alert">{{ saveError() }}</p>
+      }
+
+      <div class="form-actions">
+        <button type="submit" class="icon-button primary" title="Save" aria-label="Save" [disabled]="saving()">
+          <app-icon name="save" />
+        </button>
+        <button type="button" class="icon-button" title="Cancel" aria-label="Cancel" (click)="cancelEdit()">
+          <app-icon name="close" />
+        </button>
+      </div>
+    </form>
+  } @else {
+    <div class="panel-head">
+      <h2>{{ fullName() }}</h2>
+      <div class="actions">
+        <button type="button" class="icon-button" title="Edit household" aria-label="Edit household" (click)="startEdit()">
+          <app-icon name="edit" />
+        </button>
+        <button type="button" class="icon-button danger" title="Delete person" aria-label="Delete person" [disabled]="saving()" (click)="deletePerson()">
+          <app-icon name="delete" />
+        </button>
+      </div>
+    </div>
+    @if (person.spouse; as spouse) {
+      <p class="names">Spouse: {{ spouse.firstName }} {{ spouse.lastName }}</p>
+    }
+
+    @if (person.address; as address) {
+      <address>
+        <span class="street">{{ streetAddress() }}</span>
+        <span>{{ cityStateZip() }}</span>
+      </address>
+      <p><a class="link" [routerLink]="['/addresses', address.id]">View address</a></p>
+    } @else {
+      <p class="muted">No address on file.</p>
+    }
+
+    @if (person.children.length) {
+      <h3>Children</h3>
+      <ul class="children">
+        @for (child of person.children; track child.id) {
+          <li>{{ child.firstName }} {{ child.lastName }}</li>
+        }
+      </ul>
+    }
+
+    @if (saveError()) {
+      <p class="form-error" role="alert">{{ saveError() }}</p>
+    }
   }
 }

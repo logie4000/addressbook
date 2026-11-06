@@ -58,6 +58,15 @@ class AddressesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Ogdenville", Address.find(@address.id).city
   end
 
+  test "should update last sent and notes" do
+    patch api_v1_address_url(@address), params: { address: { lastSent: "2025", comments: "Moved in March" } }, as: :json
+    assert_response :success
+
+    address = Address.find(@address.id)
+    assert_equal "2025", address.lastSent
+    assert_equal "Moved in March", address.comments
+  end
+
   test "should destroy address and its residents" do
     assert_difference("Address.count", -1) do
       assert_difference("Person.count", -2) do

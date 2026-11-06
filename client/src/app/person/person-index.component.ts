@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import { IconComponent } from '../shared/icon/icon.component';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { ModelIndexComponent } from '../shared/model-index.component';
 import { PersonService } from '../models/person.service';
@@ -7,7 +8,7 @@ import { PersonListComponent } from './person-list/person-list.component';
 
 @Component({
   selector: 'app-person-index',
-  imports: [PersonListComponent, RouterOutlet, RouterLink],
+  imports: [IconComponent, PersonListComponent, RouterOutlet, RouterLink],
   templateUrl: './person-index.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './person-index.component.css',

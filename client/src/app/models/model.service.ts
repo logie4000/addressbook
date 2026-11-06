@@ -11,12 +11,19 @@ export abstract class ModelService<Model> {
   abstract itemUrl(item: Model): string;
 
   constructor(protected http: HttpClient) {
-
   }
 
   fetchData(id: string): Observable<Model> {
     const url = `${this.endpointUrl}/${id}`
     var payload = this.http.get<Model>(url);
     return payload;
+  }
+
+  update(id: string, body: unknown): Observable<Model> {
+    return this.http.patch<Model>(`${this.endpointUrl}/${id}`, body);
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.endpointUrl}/${id}`);
   }
 }

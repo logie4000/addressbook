@@ -1,4 +1,5 @@
 import { Component, computed, ChangeDetectionStrategy } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModelComponent } from '../shared/model.component';
 import {
   Address,
@@ -8,10 +9,11 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { AddressService } from '../models/address.service';
 import { Person } from '../models/person';
+import { IconComponent } from '../shared/icon/icon.component';
 
 @Component({
   selector: 'app-address',
-  imports: [],
+  imports: [ReactiveFormsModule, IconComponent],
   templateUrl: './address.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './address.component.css',
@@ -19,6 +21,52 @@ import { Person } from '../models/person';
 export class AddressComponent extends ModelComponent<Address> {
   constructor(activatatedRoute: ActivatedRoute, modelService: AddressService) {
     super(activatatedRoute, modelService);
+  }
+
+  form = new FormGroup({
+    street1: new FormControl('', { nonNullable: true, validators: Validators.required }),
+    street2: new FormControl('', { nonNullable: true }),
+    city: new FormControl('', { nonNullable: true, validators: Validators.required }),
+    state: new FormControl('', { nonNullable: true }),
+    zip: new FormControl('', { nonNullable: true }),
+    lastSent: new FormControl('', { nonNullable: true }),
+    comments: new FormControl('', { nonNullable: true }),
+  });
+
+  override startEdit(): void {
+    const address = this.model();
+    if (!address) {
+      return;
+    }
+    this.form.reset({
+      street1: address.street1 ?? '',
+      street2: address.street2 ?? '',
+      city: address.city ?? '',
+      state: address.state ?? '',
+      zip: address.zip ?? '',
+      lastSent: address.lastSent ?? '',
+      comments: address.comments ?? '',
+    });
+    super.startEdit();
+  }
+
+  saveAddress(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    const values = this.form.getRawValue();
+    const trimmed = Object.fromEntries(
+      Object.entries(values).map(([key, value]) => [key, value.trim()]),
+    );
+    this.save({ address: trimmed });
+  }
+
+  deleteAddress(): void {
+    this.remove(
+      `Delete ${this.street_address().replace('\n', ', ')}? Everyone who lives there is deleted too.`,
+      '/addresses',
+    );
   }
 
   title = computed(() => {

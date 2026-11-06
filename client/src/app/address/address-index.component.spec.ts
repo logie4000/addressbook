@@ -31,7 +31,7 @@ describe('AddressIndexComponent', () => {
   it('switches between cards and list, and remembers the choice', () => {
     const page: HTMLElement = fixture.nativeElement;
     const button = (label: string) =>
-      Array.from(page.querySelectorAll('.view-switch button')).find((b) => b.textContent === label) as HTMLButtonElement;
+      Array.from(page.querySelectorAll('.view-switch button')).find((b) => b.getAttribute('aria-label') === label) as HTMLButtonElement;
 
     expect(component.view()).toBe('cards');
     expect(page.querySelector('ul.cards')).not.toBeNull();

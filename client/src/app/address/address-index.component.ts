@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import { IconComponent } from '../shared/icon/icon.component';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { ModelIndexComponent } from '../shared/model-index.component';
 import { Address } from '../models/address';
@@ -9,7 +10,7 @@ const VIEW_KEY = 'addressbook.addressView';
 
 @Component({
   selector: 'app-address-index',
-  imports: [AddressListComponent, RouterOutlet, RouterLink],
+  imports: [IconComponent, AddressListComponent, RouterOutlet, RouterLink],
   templateUrl: './address-index.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './address-index.component.css',

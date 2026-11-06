@@ -9,6 +9,9 @@
   --color-page: #f6f8fa;
   --color-accent: #0969da;
   --color-accent-soft: #ddf4ff;
+  --color-accent-strong: #0550ae;
+  --color-danger: #cf222e;
+  --color-danger-soft: #ffebe9;
   --color-titlebar: #1f2a44;
 }
 
@@ -58,13 +61,16 @@ h1 {
 }
 
 .view-switch button {
-  font: inherit;
-  font-size: 0.9rem;
-  padding: 0.35rem 0.9rem;
+  display: inline-flex;
+  padding: 0.35rem 0.6rem;
   border: none;
   background: transparent;
-  color: var(--color-text);
+  color: var(--color-muted);
   cursor: pointer;
+}
+
+.view-switch button:hover {
+  color: var(--color-text);
 }
 
 .view-switch button + button {
@@ -74,7 +80,55 @@ h1 {
 .view-switch button.active {
   background: var(--color-accent-soft);
   color: var(--color-accent);
-  font-weight: 600;
+}
+
+/* --- Icon buttons (edit, delete, close, add, save) ------------------------ */
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.icon-button:hover,
+.icon-button:focus-visible {
+  background: var(--color-page);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.icon-button.danger:hover,
+.icon-button.danger:focus-visible {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.icon-button.primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+.icon-button.primary:hover,
+.icon-button.primary:focus-visible {
+  background: var(--color-accent-strong);
+  border-color: var(--color-accent-strong);
+  color: #fff;
+}
+
+.icon-button:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .panel {
@@ -97,16 +151,7 @@ h1 {
 
 .panel .close {
   float: right;
-  margin: -0.5rem -0.75rem 0 0.5rem;
-  padding: 0 0.5rem;
-  font-size: 1.75rem;
-  line-height: 1;
-  color: var(--color-muted);
-  text-decoration: none;
-}
-
-.panel .close:hover {
-  color: var(--color-text);
+  margin: -0.5rem -0.75rem 0 0.25rem;
 }
 
 /* Narrow screens: the details cover the page, with the close button on top. */
@@ -284,4 +329,135 @@ h1 {
 
 .panel .link:hover {
   text-decoration: underline;
+}
+
+/* Title row with the edit and delete buttons beside it. The close button
+   floats to the right of this row. */
+.panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.panel-head .actions,
+.form-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  margin-top: -0.25rem;
+}
+
+/* --- Edit forms in the panel ---------------------------------------------- */
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.edit-form h2 {
+  margin-bottom: 0.25rem;
+}
+
+.edit-form h3 {
+  margin: 0;
+}
+
+.edit-form label {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.edit-form input,
+.edit-form textarea {
+  font: inherit;
+  font-weight: 400;
+  color: var(--color-text);
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background: var(--color-surface);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.edit-form input:focus,
+.edit-form textarea:focus {
+  outline: 2px solid var(--color-accent-soft);
+  border-color: var(--color-accent);
+}
+
+.edit-form .ng-touched.ng-invalid {
+  border-color: var(--color-danger);
+}
+
+.edit-form textarea {
+  resize: vertical;
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.field-row .grow {
+  flex: 1 1 8rem;
+}
+
+.field-row .short {
+  flex: 0 1 4.5rem;
+}
+
+.field-row .medium {
+  flex: 0 1 6.5rem;
+}
+
+.edit-form > .medium {
+  max-width: 8rem;
+}
+
+/* A spouse or child: both names and the remove button stay on one line. */
+.field-row.member {
+  flex-wrap: nowrap;
+}
+
+.field-row.member .grow {
+  flex-basis: 0;
+}
+
+.field-row.member + .field-row.member {
+  margin-top: 0.75rem;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+.edit-form .muted {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.form-actions {
+  margin-top: 0.25rem;
+}
+
+.form-error {
+  margin: 0.75rem 0 0;
+  color: var(--color-danger);
+}
+
+.edit-form .form-error {
+  margin: 0;
 }
