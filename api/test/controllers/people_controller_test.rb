@@ -22,6 +22,9 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     ann = body.find { |p| p["id"] == @person.id }
     assert_equal "Bob", ann.dig("spouse", "firstName")
     assert_equal [ "Cal" ], ann["children"].map { |c| c["firstName"] }
+    assert_equal "1 Main St", ann.dig("address", "street1")
+    assert_equal "Springfield", ann.dig("address", "city")
+    assert_nil body.find { |p| p["firstName"] == "Al" }["address"]
   end
 
   test "should create person with nested address, spouse and children" do
@@ -97,6 +100,54 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     assert_empty Person.find(@person.id).children
+  end
+
+  test "should save a household edit from the panel form" do
+    patch api_v1_person_url(@person), params: { person: {
+      firstName: "Ann", lastName: "Zeta", suffix: "",
+      spouse_attributes: { id: @spouse.id, _destroy: "1" },
+      children_attributes: [
+        { id: @child.id, firstName: "Calvin", lastName: "Zeta" },
+        { firstName: "Dee", lastName: "Zeta" }
+      ]
+    } }, as: :json
+    assert_response :success
+
+    person = Person.find(@person.id)
+    assert_nil person.spouse_id
+    assert_nil Person.find(@spouse.id, raise_error: false)
+    assert_equal %w[ Calvin Dee ], person.children.map(&:firstName).sort
+  end
+
+  test "should save the address and household together, as the address form does" do
+    patch api_v1_person_url(@person), params: { person: {
+      firstName: "Ann", lastName: "Zeta", suffix: "",
+      spouse_attributes: { id: @spouse.id, firstName: "Robert", lastName: "Zeta" },
+      children_attributes: [ { id: @child.id, firstName: "Cal", lastName: "Zeta" } ],
+      address_attributes: { id: @address.id, street1: "2 Main St", comments: "New gate code", lastSent: "2026" }
+    } }, as: :json
+    assert_response :success
+
+    address = Address.find(@address.id)
+    assert_equal "2 Main St", address.street1
+    assert_equal "New gate code", address.comments
+    assert_equal "2026", address.lastSent
+    assert_equal "Robert", Person.find(@spouse.id).firstName
+  end
+
+  test "should add a spouse at the same address" do
+    @person.update_attributes!(spouse_id: nil)
+    @spouse.destroy
+
+    patch api_v1_person_url(@person), params: { person: {
+      spouse_attributes: { firstName: "Bea", lastName: "Zeta" }
+    } }, as: :json
+    assert_response :success
+
+    spouse = Person.find(@person.id).spouse
+    assert_equal "Bea", spouse.firstName
+    assert_equal @person.id, spouse.spouse_id
+    assert_equal @address.id, spouse.address_id
   end
 
   test "should destroy person" do

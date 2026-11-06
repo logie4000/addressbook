@@ -1,41 +1,70 @@
 import { Component, computed, ChangeDetectionStrategy } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ModelComponent } from '../shared/model.component';
 import { Person } from '../models/person';
-import { fullCityStateZip } from '../models/address';
-import { ActivatedRoute } from '@angular/router';
+import { fullCityStateZip, fullStreetAddress } from '../models/address';
 import { PersonService } from '../models/person.service';
+import { IconComponent } from '../shared/icon/icon.component';
+import { HouseholdForm, sortChildren } from '../shared/household/household-form';
+import { HouseholdFieldsComponent } from '../shared/household/household-fields.component';
 
 @Component({
   selector: 'app-person',
-  imports: [],
+  imports: [RouterLink, IconComponent, HouseholdFieldsComponent],
   templateUrl: './person.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './person.component.css',
 })
 export class PersonComponent extends ModelComponent<Person> {
-  constructor(activatatedRoute: ActivatedRoute, modelService: PersonService) {
-    super(activatatedRoute, modelService);
+  constructor(activatedRoute: ActivatedRoute, modelService: PersonService) {
+    super(activatedRoute, modelService);
   }
 
-  title = computed(() => {
-    var person = this.model();
-
-    if (person) {
-      var ret_val = person.lastName;
-
-      if (person.spouse && person.spouse.lastName != person.lastName) {
-        ret_val += `/${person.spouse.lastName}`;
-      }
+  fullName = computed(() => {
+    const person = this.model();
+    if (!person) {
+      return '';
     }
+    return [person.firstName, person.lastName, person.suffix].filter((part) => !!part).join(' ');
   });
 
-  full_address = computed(() => {
-    var address = this.model()?.address;
+  children = computed(() => sortChildren(this.model()?.children));
 
-    if (address) {
-      return fullCityStateZip(address);
-    } else {
-      return 'NO ADDRESS';
-    }
+  streetAddress = computed(() => {
+    const address = this.model()?.address;
+    return address ? fullStreetAddress(address) : '';
   });
+
+  cityStateZip = computed(() => {
+    const address = this.model()?.address;
+    return address ? fullCityStateZip(address) : '';
+  });
+
+  // --- Editing the household ------------------------------------------------
+
+  household = new HouseholdForm();
+
+  override startEdit(): void {
+    const person = this.model();
+    if (!person) {
+      return;
+    }
+    this.household.load(person);
+    super.startEdit();
+  }
+
+  saveHousehold(): void {
+    if (this.household.invalid) {
+      this.household.markAllAsTouched();
+      return;
+    }
+    this.save({ person: this.household.toPersonParams() });
+  }
+
+  deletePerson(): void {
+    this.remove(
+      `Delete ${this.fullName()}? Their spouse, children and address stay in the address book.`,
+      '/people',
+    );
+  }
 }

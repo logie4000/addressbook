@@ -1,8 +1,67 @@
-<p>
-  <div id="title">{{ title() }}</div>
-  <div id="address">
-    {{ full_address() }}
-  </div>
+@if (isLoading()) {
+  <p class="muted">Loading…</p>
+} @else if (error()) {
+  <p class="muted">This person couldn't be loaded.</p>
+} @else if (model(); as person) {
+  @if (editing()) {
+    <form class="edit-form" (submit)="$event.preventDefault(); saveHousehold()">
+      <h2>Edit household</h2>
 
-<p>
-<strong>Children:</strong>
+      <app-household-fields [household]="household" />
+
+      @if (household.form.touched && household.invalid) {
+        <p class="form-error" role="alert">Every person needs a first name.</p>
+      }
+      @if (saveError()) {
+        <p class="form-error" role="alert">{{ saveError() }}</p>
+      }
+
+      <div class="form-actions">
+        <button type="submit" class="icon-button primary" title="Save" aria-label="Save" [disabled]="saving()">
+          <app-icon name="save" />
+        </button>
+        <button type="button" class="icon-button" title="Cancel" aria-label="Cancel" (click)="cancelEdit()">
+          <app-icon name="close" />
+        </button>
+      </div>
+    </form>
+  } @else {
+    <div class="panel-head">
+      <h2>{{ fullName() }}</h2>
+      <div class="actions">
+        <button type="button" class="icon-button" title="Edit household" aria-label="Edit household" (click)="startEdit()">
+          <app-icon name="edit" />
+        </button>
+        <button type="button" class="icon-button danger" title="Delete person" aria-label="Delete person" [disabled]="saving()" (click)="deletePerson()">
+          <app-icon name="delete" />
+        </button>
+      </div>
+    </div>
+    @if (person.spouse; as spouse) {
+      <p class="names">Spouse: {{ spouse.firstName }} {{ spouse.lastName }}</p>
+    }
+
+    @if (person.address; as address) {
+      <address>
+        <span class="street">{{ streetAddress() }}</span>
+        <span>{{ cityStateZip() }}</span>
+      </address>
+      <p><a class="link" [routerLink]="['/addresses', address.id]">View address</a></p>
+    } @else {
+      <p class="muted">No address on file.</p>
+    }
+
+    @if (person.children.length) {
+      <h3>Children</h3>
+      <ul class="children">
+        @for (child of children(); track child.id) {
+          <li>{{ child.firstName }} {{ child.lastName }}</li>
+        }
+      </ul>
+    }
+
+    @if (saveError()) {
+      <p class="form-error" role="alert">{{ saveError() }}</p>
+    }
+  }
+}

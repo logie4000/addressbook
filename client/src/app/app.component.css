@@ -1,11 +1,123 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* --- Title bar ------------------------------------------------------------ */
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-titlebar);
+  color: #fff;
+}
+
+.app-title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: inherit;
+  text-decoration: none;
+}
+
 .session {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.5rem 1rem;
   font-size: 0.9rem;
 }
+
+.session button {
+  display: inline-flex;
+  font: inherit;
+  padding: 0.35rem;
+  border: 1px solid rgb(255 255 255 / 0.5);
+  border-radius: 0.375rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.session button:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+
+/* --- Side menu and page --------------------------------------------------- */
+
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 0.75rem;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+}
+
+.sidebar a {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.sidebar a:hover {
+  background: var(--color-page);
+}
+
+.sidebar a.active {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.content {
+  padding: 0 1.5rem 2rem;
+  min-width: 0;
+}
+
+/* Phones: the menu becomes a row of tabs under the title bar. */
+@media (max-width: 720px) {
+  .titlebar {
+    padding: 0.75rem 1rem;
+  }
+
+  .app-title {
+    font-size: 1.5rem;
+  }
+
+  .session .email {
+    display: none;
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+
+  .sidebar {
+    flex-direction: row;
+    padding: 0.5rem 1rem;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .content {
+    padding: 0 1rem 2rem;
+  }
+}
+
+/* --- Sign-in error -------------------------------------------------------- */
 
 .sign-in-error {
   max-width: 32rem;

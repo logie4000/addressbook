@@ -2,7 +2,7 @@ require "test_helper"
 
 class AddressesControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @address = Address.create!(street1: "1 Main St", street2: "Apt 2", city: "Springfield", state: "IL", zip: "62701", comments: "Front door")
+    @address = Address.create!(street1: "1 Main St", street2: "Apt 2", city: "Springfield", state: "IL", zip: "62701", comments: "Front door", lastSent: "2025")
     @addressee = Person.create!(firstName: "Ann", lastName: "Zeta", address_id: @address.id)
     @spouse = Person.create!(firstName: "Bob", lastName: "Zeta", address_id: @address.id, spouse_id: @addressee.id)
     @addressee.update_attributes!(spouse_id: @spouse.id)
@@ -22,6 +22,10 @@ class AddressesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Bob", body.last.dig("addressee", "spouse", "firstName")
     assert_equal @address.id, body.last["id"]
     assert_equal @addressee.id, body.last["addressee_id"]
+    assert_equal "2025", body.last["lastSent"]
+    assert_nil body.last["comments"], "the list leaves out the comments"
+    assert_equal [ "Cal" ], body.last.dig("addressee", "children").map { |c| c["firstName"] }
+    assert_equal [], body.first.dig("addressee", "children")
   end
 
   test "should create address" do
@@ -42,6 +46,7 @@ class AddressesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Ann", body.dig("addressee", "firstName")
     assert_equal "Bob", body.dig("addressee", "spouse", "firstName")
     assert_equal [ "Cal" ], body.dig("addressee", "children").map { |c| c["firstName"] }
+    assert body["addressee"].key?("suffix"), "the edit form needs the suffix"
   end
 
   test "should return not found for a missing address" do
@@ -54,6 +59,15 @@ class AddressesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     assert_equal "Ogdenville", Address.find(@address.id).city
+  end
+
+  test "should update last sent and notes" do
+    patch api_v1_address_url(@address), params: { address: { lastSent: "2025", comments: "Moved in March" } }, as: :json
+    assert_response :success
+
+    address = Address.find(@address.id)
+    assert_equal "2025", address.lastSent
+    assert_equal "Moved in March", address.comments
   end
 
   test "should destroy address and its residents" do

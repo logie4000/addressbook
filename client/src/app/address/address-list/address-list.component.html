@@ -1,16 +1,70 @@
-<table>
-  <thead>
-    <th>Name(s)</th>
-    <th>Street Address</th>
-    <th>City, State Zip</th>
-  </thead>
-  <tbody>
-    @for(address of itemList(); track address) {
-      <tr (click)="onRowClick(address)">
-        <td>{{ getResident(address) }}</td>
-        <td>{{ getStreetAddress(address) }}</td>
-        <td>{{ getCityStateZip(address) }}</td>
-      </tr>
+@if (view() === 'list') {
+  <div class="row-list addresses" role="list">
+    <div class="row-list-header" aria-hidden="true">
+      <span>Name</span>
+      <span>Street address</span>
+      <span>City, State ZIP</span>
+      <span class="sent">Last sent</span>
+    </div>
+    @for (address of sorted(); track address.id) {
+      <!-- The name link stretches over the whole row (see .row-link), so the
+           buttons can sit in the row without being inside a link. -->
+      <div class="row" role="listitem" routerLinkActive="selected">
+        <a class="name row-link" [routerLink]="getUrl(address)" routerLinkActive="current" [ariaCurrentWhenActive]="true">
+          {{ getListName(address) }}
+          @if (getChildNames(address); as children) {
+            <span class="children">{{ children }}</span>
+          }
+        </a>
+        <span class="street">{{ getStreetAddress(address) }}</span>
+        <span class="city">{{ getCityStateZip(address) }}</span>
+        <span class="sent">
+          <span class="year">{{ address.lastSent || '—' }}</span>
+          <span class="row-actions">
+            <button type="button" class="icon-button small" title="Edit" [attr.aria-label]="'Edit ' + getListName(address)" (click)="editAddress(address)">
+              <app-icon name="edit" />
+            </button>
+            <button type="button" class="icon-button small danger" title="Delete" [attr.aria-label]="'Delete ' + getListName(address)" [disabled]="busy().has(address.id)" (click)="deleteAddress(address)">
+              <app-icon name="delete" />
+            </button>
+            @let sentThisYear = address.lastSent === currentYear;
+            <button
+              type="button"
+              class="icon-button small mark"
+              [class.done]="sentThisYear"
+              [disabled]="sentThisYear || busy().has(address.id)"
+              [title]="sentThisYear ? 'Sent in ' + currentYear : 'Mark sent in ' + currentYear"
+              [attr.aria-label]="(sentThisYear ? 'Sent in ' : 'Mark sent in ') + currentYear"
+              (click)="markSent(address)">
+              <app-icon name="mail" />
+            </button>
+          </span>
+        </span>
+      </div>
+    } @empty {
+      <p class="empty">No addresses yet.</p>
     }
-  </tbody>
-</table>
+  </div>
+} @else {
+  <ul class="cards">
+    @for (address of sorted(); track address.id) {
+      <li>
+        <a class="card" [routerLink]="getUrl(address)" routerLinkActive="selected" [ariaCurrentWhenActive]="true">
+          <h2 class="household">{{ getResident(address) }}</h2>
+          @if (getFirstNames(address); as names) {
+            <p class="names">{{ names }}</p>
+          }
+          <address>
+            <span class="street">{{ getStreetAddress(address) }}</span>
+            <span>{{ getCityStateZip(address) }}</span>
+          </address>
+          @if (address.lastSent) {
+            <p class="last-sent">Last sent {{ address.lastSent }}</p>
+          }
+        </a>
+      </li>
+    } @empty {
+      <li class="empty">No addresses yet.</li>
+    }
+  </ul>
+}
