@@ -1,16 +1,21 @@
-<table>
-  <thead>
-    <th>Name(s)</th>
-    <th>Street Address</th>
-    <th>City, State Zip</th>
-  </thead>
-  <tbody>
-    @for(address of itemList(); track address) {
-      <tr (click)="onRowClick(address)">
-        <td>{{ getResident(address) }}</td>
-        <td>{{ getStreetAddress(address) }}</td>
-        <td>{{ getCityStateZip(address) }}</td>
-      </tr>
-    }
-  </tbody>
-</table>
+<ul class="cards">
+  @for (address of itemList(); track address.id) {
+    <li>
+      <a class="card" [routerLink]="getUrl(address)">
+        <h2 class="household">{{ getResident(address) }}</h2>
+        @if (getFirstNames(address); as names) {
+          <p class="names">{{ names }}</p>
+        }
+        <address>
+          <span class="street">{{ getStreetAddress(address) }}</span>
+          <span>{{ getCityStateZip(address) }}</span>
+        </address>
+        @if (address.lastSent) {
+          <p class="last-sent">Last sent {{ address.lastSent }}</p>
+        }
+      </a>
+    </li>
+  } @empty {
+    <li class="empty">No addresses yet.</li>
+  }
+</ul>

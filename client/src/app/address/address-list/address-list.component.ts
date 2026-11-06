@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ModelListComponent } from '../../shared/model-list.component';
 import { AddressService } from '../../models/address.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   Address,
   fullCityStateZip,
@@ -10,7 +10,7 @@ import {
 
 @Component({
   selector: 'app-address-list',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './address-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './address-list.component.css',
@@ -33,6 +33,12 @@ export class AddressListComponent extends ModelListComponent<Address> {
     }
 
     return ret_val;
+  }
+
+  /** "Alice & Ben", or just "Grace" when there's no spouse. */
+  getFirstNames(address: Address): string {
+    const names = [address.addressee?.firstName, address.addressee?.spouse?.firstName];
+    return names.filter((name) => !!name).join(' & ');
   }
 
   getStreetAddress(address: Address) {

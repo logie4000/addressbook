@@ -2,7 +2,7 @@ require "test_helper"
 
 class AddressesControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @address = Address.create!(street1: "1 Main St", street2: "Apt 2", city: "Springfield", state: "IL", zip: "62701", comments: "Front door")
+    @address = Address.create!(street1: "1 Main St", street2: "Apt 2", city: "Springfield", state: "IL", zip: "62701", comments: "Front door", lastSent: "2025")
     @addressee = Person.create!(firstName: "Ann", lastName: "Zeta", address_id: @address.id)
     @spouse = Person.create!(firstName: "Bob", lastName: "Zeta", address_id: @address.id, spouse_id: @addressee.id)
     @addressee.update_attributes!(spouse_id: @spouse.id)
@@ -22,6 +22,8 @@ class AddressesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Bob", body.last.dig("addressee", "spouse", "firstName")
     assert_equal @address.id, body.last["id"]
     assert_equal @addressee.id, body.last["addressee_id"]
+    assert_equal "2025", body.last["lastSent"]
+    assert_nil body.last["comments"], "the list leaves out the comments"
   end
 
   test "should create address" do

@@ -1,7 +1,7 @@
 class Api::V1::AddressesController < ApplicationController
   before_action :set_address, only: %i[ show update destroy ]
 
-  INDEX_FIELDS = %w[ id street1 street2 city state zip addressee_id ].freeze
+  INDEX_FIELDS = %w[ id street1 street2 city state zip lastSent addressee_id ].freeze
 
   # GET /addresses
   #
