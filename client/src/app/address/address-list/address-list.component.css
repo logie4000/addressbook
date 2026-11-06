@@ -1,7 +1,8 @@
 :host {
   display: block;
-  /* Name, street, city/state/ZIP, last sent (see .row-list in styles.css). */
-  --row-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) 5.5rem;
+  /* Name, street, city/state/ZIP, last sent, mark-sent button (see
+     .row-list in styles.css). */
+  --row-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) 5.5rem 2.25rem;
   /* Columns follow the space the list has, which shrinks when the details
      panel is open. */
   container-type: inline-size;

@@ -5,19 +5,35 @@
       <span>Street address</span>
       <span>City, State ZIP</span>
       <span class="sent">Last sent</span>
+      <span></span>
     </div>
     @for (address of sorted(); track address.id) {
-      <a class="row" role="listitem" [routerLink]="getUrl(address)" routerLinkActive="selected" [ariaCurrentWhenActive]="true">
-        <span class="name">
+      <!-- The name link stretches over the whole row (see .row-link), so the
+           mark-sent button can sit in the row without being inside a link. -->
+      <div class="row" role="listitem" routerLinkActive="selected">
+        <a class="name row-link" [routerLink]="getUrl(address)" routerLinkActive="current" [ariaCurrentWhenActive]="true">
           {{ getListName(address) }}
           @if (getChildNames(address); as children) {
             <span class="children">{{ children }}</span>
           }
-        </span>
+        </a>
         <span class="street">{{ getStreetAddress(address) }}</span>
         <span class="city">{{ getCityStateZip(address) }}</span>
         <span class="sent">{{ address.lastSent || '—' }}</span>
-      </a>
+        <span class="mark">
+          @let sentThisYear = address.lastSent === currentYear;
+          <button
+            type="button"
+            class="icon-button"
+            [class.done]="sentThisYear"
+            [disabled]="sentThisYear || marking().has(address.id)"
+            [title]="sentThisYear ? 'Sent in ' + currentYear : 'Mark sent in ' + currentYear"
+            [attr.aria-label]="(sentThisYear ? 'Sent in ' : 'Mark sent in ') + currentYear"
+            (click)="markSent(address)">
+            <app-icon name="mail" />
+          </button>
+        </span>
+      </div>
     } @empty {
       <p class="empty">No addresses yet.</p>
     }

@@ -2,7 +2,9 @@ import { HttpErrorResponse, httpResource } from '@angular/common/http';
 import {
   Component,
   computed,
+  effect,
   inject,
+  untracked,
   signal,
   ChangeDetectionStrategy,
 } from '@angular/core';
@@ -49,6 +51,21 @@ export abstract class ModelComponent<Model extends { id: string }> {
     return `${this.modelService.endpointUrl}/${this.id()}`;
   });
 
+  private seenVersion = this.changes.version();
+
+  /** Fetch again after a save anywhere, e.g. "mark sent" in the list. */
+  private reloadOnChange = effect(() => {
+    const version = this.changes.version();
+    if (version !== this.seenVersion) {
+      this.seenVersion = version;
+      untracked(() => {
+        if (this.id()) {
+          this.loadResource.reload();
+        }
+      });
+    }
+  });
+
   constructor(
     protected activatedRoute: ActivatedRoute,
     protected modelService: ModelService<Model>,
@@ -90,7 +107,7 @@ export abstract class ModelComponent<Model extends { id: string }> {
       next: () => {
         this.saving.set(false);
         this.editing.set(false);
-        this.loadResource.reload();
+        // Reloads this panel and the lists (see reloadOnChange).
         this.changes.notify();
       },
       error: (err) => {

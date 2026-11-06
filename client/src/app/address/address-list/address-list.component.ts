@@ -1,4 +1,6 @@
-import { Component, ChangeDetectionStrategy, computed, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, input, signal } from '@angular/core';
+import { IconComponent } from '../../shared/icon/icon.component';
+import { DataChangesService } from '../../shared/service/data-changes.service';
 import { ModelListComponent } from '../../shared/model-list.component';
 import { compareText } from '../../shared/compare-text';
 import { AddressService } from '../../models/address.service';
@@ -13,12 +15,47 @@ export type AddressView = 'cards' | 'list';
 
 @Component({
   selector: 'app-address-list',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, IconComponent],
   templateUrl: './address-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './address-list.component.css',
 })
 export class AddressListComponent extends ModelListComponent<Address> {
+  readonly currentYear = String(new Date().getFullYear());
+
+  /** Ids of addresses whose mark-sent request is in flight. */
+  marking = signal<ReadonlySet<string>>(new Set());
+  private changes = inject(DataChangesService);
+
+  /** Sets Last sent to this year (the browser's year), then refreshes. */
+  markSent(address: Address): void {
+    if (this.marking().has(address.id)) {
+      return;
+    }
+    const setMarking = (on: boolean) =>
+      this.marking.update((ids) => {
+        const next = new Set(ids);
+        if (on) {
+          next.add(address.id);
+        } else {
+          next.delete(address.id);
+        }
+        return next;
+      });
+
+    setMarking(true);
+    this.itemService.update(address.id, { address: { lastSent: this.currentYear } }).subscribe({
+      next: () => {
+        setMarking(false);
+        this.changes.notify();
+      },
+      error: () => {
+        setMarking(false);
+        window.alert(`Last sent couldn't be updated for ${this.getListName(address)}. Please try again.`);
+      },
+    });
+  }
+
   /** Cards in a grid, or one row per address. */
   view = input<AddressView>('cards');
 

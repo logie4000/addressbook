@@ -3,7 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AddressListComponent } from './address-list.component';
 import { AddressService } from '../../models/address.service';
 import { provideHttpClient, withXhr } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { DataChangesService } from '../../shared/service/data-changes.service';
 import { provideRouter } from '@angular/router';
 import { ADDRESS_1 } from '../../test/test-data';
 
@@ -77,8 +78,8 @@ describe('AddressListComponent', () => {
       fixture.detectChanges();
     });
 
-    const rows = () => Array.from(fixture.nativeElement.querySelectorAll('a.row') as NodeListOf<HTMLElement>)
-      .map((row) => Array.from(row.querySelectorAll(':scope > span')).map((cell) => cell.firstChild!.textContent!.trim()));
+    const rows = () => Array.from(fixture.nativeElement.querySelectorAll('.row-list .row') as NodeListOf<HTMLElement>)
+      .map((row) => Array.from(row.querySelectorAll(':scope > .name, :scope > .street, :scope > .city, :scope > .sent')).map((cell) => cell.firstChild!.textContent!.trim()));
 
     it('shows one row per address, ordered by last name', () => {
       expect(rows()).toEqual([
@@ -89,13 +90,41 @@ describe('AddressListComponent', () => {
     });
 
     it('lists the children under the names, with differing last names only', () => {
-      const children = Array.from(fixture.nativeElement.querySelectorAll('a.row') as NodeListOf<HTMLElement>)
+      const children = Array.from(fixture.nativeElement.querySelectorAll('.row-list .row') as NodeListOf<HTMLElement>)
         .map((row) => row.querySelector('.name .children')?.textContent?.trim() ?? null);
       expect(children).toEqual([null, null, 'Elena, Sam Smith']);
     });
 
+    it('marks an address as sent this year from its row', () => {
+      const year = String(new Date().getFullYear());
+      const http = TestBed.inject(HttpTestingController);
+      const changes = TestBed.inject(DataChangesService);
+      const buttons = () => Array.from(fixture.nativeElement.querySelectorAll('.row .mark button') as NodeListOf<HTMLButtonElement>);
+
+      expect(buttons().length).toBe(3);
+      expect(buttons()[1].getAttribute('aria-label')).toBe(`Mark sent in ${year}`);
+      buttons()[1].click();
+      fixture.detectChanges();
+      expect(buttons()[1].disabled).withContext('busy while saving').toBeTrue();
+
+      const req = http.expectOne((r) => r.method === 'PATCH');
+      expect(req.request.url).toMatch(/addresses\/o$/);
+      expect(req.request.body).toEqual({ address: { lastSent: year } });
+      req.flush({});
+      expect(changes.version()).toBe(1);
+    });
+
+    it('shows when an address was already sent this year', () => {
+      const year = String(new Date().getFullYear());
+      fixture.componentRef.setInput('itemList', [{ ...ADDRESS_1, id: 'x', lastSent: year }]);
+      fixture.detectChanges();
+      const button = fixture.nativeElement.querySelector('.row .mark button') as HTMLButtonElement;
+      expect(button.disabled).toBeTrue();
+      expect(button.getAttribute('aria-label')).toBe(`Sent in ${year}`);
+    });
+
     it('links each row to its address', () => {
-      const first = fixture.nativeElement.querySelector('a.row') as HTMLElement;
+      const first = fixture.nativeElement.querySelector('.row a.row-link') as HTMLElement;
       expect(first.getAttribute('href')).toBe('/addresses/m');
     });
   });
