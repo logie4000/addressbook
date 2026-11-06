@@ -1,6 +1,59 @@
-:host {
-  display: block;
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 0 1rem 2rem;
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.split.with-panel {
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 26rem);
+}
+
+.panel {
+  position: sticky;
+  top: 1rem;
+  margin-top: 1.5rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 1.25rem 1.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.06);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.close {
+  float: right;
+  margin: -0.5rem -0.75rem 0 0.5rem;
+  padding: 0 0.5rem;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.close:hover {
+  color: var(--color-text);
+}
+
+/* Narrow screens: the details cover the page, with the close button on top. */
+@media (max-width: 720px) {
+  .split.with-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .panel {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    margin: 0;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+  }
 }

@@ -5,13 +5,12 @@ import { PersonIndexComponent } from './person/person-index.component';
 import { PersonComponent } from './person/person.component';
 
 export const routes: Routes = [
+  { path: '', pathMatch: 'full', redirectTo: 'addresses' },
   {
     path: 'addresses',
     component: AddressIndexComponent,
-  },
-  {
-    path: 'addresses/:id',
-    component: AddressComponent,
+    // An address's details open in a panel beside the cards.
+    children: [{ path: ':id', component: AddressComponent }],
   },
   {
     path: 'people',
@@ -20,5 +19,5 @@ export const routes: Routes = [
   {
     path: 'people/:id',
     component: PersonComponent,
-  }
+  },
 ];

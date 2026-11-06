@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ModelListComponent } from '../../shared/model-list.component';
 import { AddressService } from '../../models/address.service';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import {
   Address,
   fullCityStateZip,
@@ -10,7 +10,7 @@ import {
 
 @Component({
   selector: 'app-address-list',
-  imports: [RouterLink],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './address-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './address-list.component.css',

@@ -8,6 +8,8 @@
   --color-surface: #ffffff;
   --color-page: #f6f8fa;
   --color-accent: #0969da;
+  --color-accent-soft: #ddf4ff;
+  --color-titlebar: #1f2a44;
 }
 
 body {

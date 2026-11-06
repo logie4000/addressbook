@@ -8,11 +8,10 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { AddressService } from '../models/address.service';
 import { Person } from '../models/person';
-import { BackButtonComponent } from '../shared/back-button.component';
 
 @Component({
   selector: 'app-address',
-  imports: [BackButtonComponent],
+  imports: [],
   templateUrl: './address.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './address.component.css',
@@ -51,7 +50,7 @@ export class AddressComponent extends ModelComponent<Address> {
       ret_val = `${addressee.firstName} ${addressee.lastName}`;
 
       if (addressee.spouse) {
-        ret_val += ` & ${addressee.spouse.firstName} ${addressee.spouse.lastName} `;
+        ret_val += ` & ${addressee.spouse.firstName} ${addressee.spouse.lastName}`;
       }
     }
 

@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AddressIndexComponent } from './address-index.component';
@@ -11,7 +12,7 @@ describe('AddressIndexComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
+      providers: [provideHttpClient(withXhr()), provideHttpClientTesting(), provideRouter([])],
       imports: [AddressIndexComponent],
     }).compileComponents();
 

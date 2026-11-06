@@ -1,3 +1,11 @@
-<h1>Addresses</h1>
+<div class="split" [class.with-panel]="panelOpen()">
+  <section class="list">
+    <h1>Addresses</h1>
+    <app-address-list [itemList]="getValues()" />
+  </section>
 
-<app-address-list [itemList]="getValues()" />
+  <aside class="panel" [hidden]="!panelOpen()" aria-label="Address details">
+    <a class="close" routerLink="/addresses" aria-label="Close details">&times;</a>
+    <router-outlet (activate)="panelOpen.set(true)" (deactivate)="panelOpen.set(false)" />
+  </aside>
+</div>

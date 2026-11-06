@@ -1,0 +1,58 @@
+h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.names {
+  margin: 0.25rem 0 0;
+  color: var(--color-muted);
+}
+
+address {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+  font-style: normal;
+}
+
+.street {
+  white-space: pre-line;
+}
+
+h3 {
+  margin: 1.25rem 0 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+}
+
+.children {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+dl {
+  margin: 1.25rem 0 0;
+}
+
+dt {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+}
+
+dd {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.muted {
+  color: var(--color-muted);
+}

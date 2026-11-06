@@ -4,11 +4,24 @@
     <button type="button" (click)="auth.startSignIn()">Try another account</button>
   </div>
 } @else {
-  @if (auth.enabled) {
-    <div class="session">
-      <span>{{ auth.email }}</span>
-      <button type="button" (click)="auth.signOut()">Sign out</button>
-    </div>
-  }
-  <router-outlet></router-outlet>
+  <header class="titlebar">
+    <a class="app-title" routerLink="/addresses">{{ title }}</a>
+    @if (auth.enabled) {
+      <div class="session">
+        <span class="email">{{ auth.email }}</span>
+        <button type="button" (click)="auth.signOut()">Sign out</button>
+      </div>
+    }
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" aria-label="Main">
+      <a routerLink="/addresses" routerLinkActive="active" ariaCurrentWhenActive="page">Addresses</a>
+      <a routerLink="/people" routerLinkActive="active" ariaCurrentWhenActive="page">People</a>
+    </nav>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
 }

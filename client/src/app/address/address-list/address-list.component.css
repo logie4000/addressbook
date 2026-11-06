@@ -1,3 +1,10 @@
+:host {
+  display: block;
+  /* Columns follow the space the list has, which shrinks when the details
+     panel is open. */
+  container-type: inline-size;
+}
+
 .cards {
   list-style: none;
   margin: 0;
@@ -7,13 +14,13 @@
   gap: 1rem;
 }
 
-@media (max-width: 900px) {
+@container (max-width: 760px) {
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 560px) {
+@container (max-width: 460px) {
   .cards {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -38,6 +45,11 @@
   border-color: var(--color-accent);
   box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
   outline: none;
+}
+
+.card.selected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
 }
 
 .household {
