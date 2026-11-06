@@ -226,6 +226,16 @@ h1 {
   display: block;
 }
 
+/* The year sits at the top of the row and its buttons along the bottom,
+   however tall the row's other columns make it. */
+.row-list .row .sent {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  align-self: stretch;
+}
+
 .row .sent {
   color: var(--color-muted);
   font-variant-numeric: tabular-nums;
@@ -516,7 +526,7 @@ h1 {
   display: flex;
   justify-content: flex-end;
   gap: 0.125rem;
-  margin: 0.25rem -0.4rem 0 0;
+  margin: 0.25rem -0.4rem -0.3rem 0;
 }
 
 .icon-button.small {
@@ -537,5 +547,24 @@ h1 {
 @container (max-width: 560px) {
   .row .sent {
     grid-row: 1 / span 3;
+  }
+}
+
+/* Very narrow (e.g. beside an open details panel): give the text the full
+   width and put the buttons on their own line along the bottom. */
+@container (max-width: 300px) {
+  .row-list .row .sent {
+    display: contents;
+  }
+
+  .row .year {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .row .row-actions {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    margin-top: 0.125rem;
   }
 }
