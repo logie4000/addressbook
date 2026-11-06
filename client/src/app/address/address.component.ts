@@ -1,4 +1,4 @@
-import { Component, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModelComponent } from '../shared/model.component';
 import {
@@ -10,10 +10,13 @@ import { ActivatedRoute } from '@angular/router';
 import { AddressService } from '../models/address.service';
 import { Person } from '../models/person';
 import { IconComponent } from '../shared/icon/icon.component';
+import { PersonService } from '../models/person.service';
+import { HouseholdForm, sortChildren } from '../shared/household/household-form';
+import { HouseholdFieldsComponent } from '../shared/household/household-fields.component';
 
 @Component({
   selector: 'app-address',
-  imports: [ReactiveFormsModule, IconComponent],
+  imports: [ReactiveFormsModule, IconComponent, HouseholdFieldsComponent],
   templateUrl: './address.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './address.component.css',
@@ -47,19 +50,42 @@ export class AddressComponent extends ModelComponent<Address> {
       lastSent: address.lastSent ?? '',
       comments: address.comments ?? '',
     });
+    if (address.addressee) {
+      this.household.load(address.addressee);
+    }
     super.startEdit();
   }
 
+  /** The people at this address; edited in the same form. */
+  household = new HouseholdForm();
+  private people = inject(PersonService);
+
   saveAddress(): void {
-    if (this.form.invalid) {
+    const address = this.model();
+    const addressee = address?.addressee;
+    if (!address || this.form.invalid || (addressee && this.household.invalid)) {
       this.form.markAllAsTouched();
+      this.household.markAllAsTouched();
       return;
     }
     const values = this.form.getRawValue();
-    const trimmed = Object.fromEntries(
+    const fields = Object.fromEntries(
       Object.entries(values).map(([key, value]) => [key, value.trim()]),
     );
-    this.save({ address: trimmed });
+
+    if (addressee) {
+      // One request saves the household and, nested in it, the address.
+      this.saveWith(
+        this.people.update(addressee.id, {
+          person: {
+            ...this.household.toPersonParams(),
+            address_attributes: { id: address.id, ...fields },
+          },
+        }),
+      );
+    } else {
+      this.save({ address: fields });
+    }
   }
 
   deleteAddress(): void {
@@ -139,9 +165,7 @@ export class AddressComponent extends ModelComponent<Address> {
   child_units = computed<Person[]>(() => {
     var address = this.model();
     if (address && address.addressee?.children) {
-      var children = address.addressee?.children;
-
-      return children;
+      return sortChildren(address.addressee.children);
     }
 
     return [];

@@ -7,6 +7,11 @@
     <form class="edit-form" [formGroup]="form" (ngSubmit)="saveAddress()">
       <h2>Edit address</h2>
 
+      @if (address.addressee) {
+        <app-household-fields [household]="household" />
+        <h3 class="form-section">Address</h3>
+      }
+
       <label>
         Street
         <input formControlName="street1" autocomplete="address-line1" />
@@ -38,8 +43,8 @@
         <textarea formControlName="comments" rows="3"></textarea>
       </label>
 
-      @if (form.touched && form.invalid) {
-        <p class="form-error" role="alert">Street and city are required.</p>
+      @if ((form.touched && form.invalid) || (address.addressee && household.form.touched && household.invalid)) {
+        <p class="form-error" role="alert">Street, city and every first name are required.</p>
       }
       @if (saveError()) {
         <p class="form-error" role="alert">{{ saveError() }}</p>

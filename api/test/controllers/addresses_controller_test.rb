@@ -46,6 +46,7 @@ class AddressesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Ann", body.dig("addressee", "firstName")
     assert_equal "Bob", body.dig("addressee", "spouse", "firstName")
     assert_equal [ "Cal" ], body.dig("addressee", "children").map { |c| c["firstName"] }
+    assert body["addressee"].key?("suffix"), "the edit form needs the suffix"
   end
 
   test "should return not found for a missing address" do

@@ -35,6 +35,7 @@ class Api::V1::AddressesController < ApplicationController
 
     render json: @address.as_json.merge(
       "addressee" => addressee && name_fields(addressee).merge(
+        "suffix" => addressee.suffix,
         "spouse" => addressee.spouse && name_fields(addressee.spouse),
         "children" => addressee.children.map { |child| name_fields(child) }
       )

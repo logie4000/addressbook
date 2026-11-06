@@ -7,6 +7,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Observable } from 'rxjs';
 import { ModelService } from '../models/model.service';
 import { DataChangesService } from './service/data-changes.service';
 
@@ -72,13 +73,20 @@ export abstract class ModelComponent<Model extends { id: string }> {
   /** Sends the edit form's changes and shows the saved record. */
   protected save(body: unknown): void {
     const record = this.model();
-    if (!record || this.saving()) {
+    if (record) {
+      this.saveWith(this.modelService.update(record.id, body));
+    }
+  }
+
+  /** Runs a save request, then shows the saved record and refreshes the lists. */
+  protected saveWith(request: Observable<unknown>): void {
+    if (this.saving()) {
       return;
     }
 
     this.saving.set(true);
     this.saveError.set('');
-    this.modelService.update(record.id, body).subscribe({
+    request.subscribe({
       next: () => {
         this.saving.set(false);
         this.editing.set(false);

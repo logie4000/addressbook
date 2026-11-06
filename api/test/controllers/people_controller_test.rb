@@ -119,6 +119,22 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     assert_equal %w[ Calvin Dee ], person.children.map(&:firstName).sort
   end
 
+  test "should save the address and household together, as the address form does" do
+    patch api_v1_person_url(@person), params: { person: {
+      firstName: "Ann", lastName: "Zeta", suffix: "",
+      spouse_attributes: { id: @spouse.id, firstName: "Robert", lastName: "Zeta" },
+      children_attributes: [ { id: @child.id, firstName: "Cal", lastName: "Zeta" } ],
+      address_attributes: { id: @address.id, street1: "2 Main St", comments: "New gate code", lastSent: "2026" }
+    } }, as: :json
+    assert_response :success
+
+    address = Address.find(@address.id)
+    assert_equal "2 Main St", address.street1
+    assert_equal "New gate code", address.comments
+    assert_equal "2026", address.lastSent
+    assert_equal "Robert", Person.find(@spouse.id).firstName
+  end
+
   test "should add a spouse at the same address" do
     @person.update_attributes!(spouse_id: nil)
     @spouse.destroy

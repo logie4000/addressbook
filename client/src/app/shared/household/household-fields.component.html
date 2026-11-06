@@ -1,0 +1,75 @@
+@let h = household();
+<div class="household-fields" [formGroup]="h.form">
+  <div class="field-row">
+    <label class="grow">
+      First name
+      <input formControlName="firstName" />
+    </label>
+    <label class="grow">
+      Last name
+      <input formControlName="lastName" />
+    </label>
+    <label class="short">
+      Suffix
+      <input formControlName="suffix" />
+    </label>
+  </div>
+
+  <div class="section-head">
+    <h3>Spouse</h3>
+    @if (h.canAddSpouse()) {
+      <button type="button" class="icon-button" title="Add spouse" aria-label="Add spouse" (click)="h.addSpouse()">
+        <app-icon name="add" />
+      </button>
+    }
+  </div>
+  <div formArrayName="spouse">
+    @for (spouse of h.spouseArray.controls; track spouse) {
+      <div class="field-row member" [formGroupName]="$index">
+        <label class="grow">
+          First name
+          <input formControlName="firstName" />
+        </label>
+        <label class="grow">
+          Last name
+          <input formControlName="lastName" />
+        </label>
+        <button type="button" class="icon-button danger" title="Remove spouse" aria-label="Remove spouse" (click)="h.removeSpouse()">
+          <app-icon name="delete" />
+        </button>
+      </div>
+    } @empty {
+      <p class="muted">No spouse.</p>
+    }
+  </div>
+
+  <div class="section-head">
+    <h3>Children</h3>
+    <button type="button" class="icon-button" title="Add child" aria-label="Add child" (click)="h.addChild()">
+      <app-icon name="add" />
+    </button>
+  </div>
+  <div formArrayName="children">
+    @for (child of h.childArray.controls; track child) {
+      <div class="field-row member" [formGroupName]="$index">
+        <label class="grow">
+          First name
+          <input formControlName="firstName" />
+        </label>
+        <label class="grow">
+          Last name
+          <input formControlName="lastName" />
+        </label>
+        <button type="button" class="icon-button danger" title="Remove child" [attr.aria-label]="'Remove ' + (child.value.firstName || 'child')" (click)="h.removeChild($index)">
+          <app-icon name="delete" />
+        </button>
+      </div>
+    } @empty {
+      <p class="muted">No children.</p>
+    }
+  </div>
+
+  @if (h.removedIds().length) {
+    <p class="muted">Removed people are deleted from the address book when you save.</p>
+  }
+</div>

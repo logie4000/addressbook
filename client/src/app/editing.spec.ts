@@ -43,27 +43,62 @@ describe('Editing records in the details panel', () => {
   };
 
   const address = { ...ADDRESS_1, street1: '12 Elm Street', city: 'Springfield', lastSent: '2024' };
+  const field = (name: string) => panel().querySelector(`[formcontrolname="${name}"]`) as HTMLInputElement;
 
-  it('edits an address and refreshes the list', async () => {
+  it('edits an address with no household and refreshes the list', async () => {
+    const empty = { ...address, addressee: undefined };
     await harness.navigateByUrl('/addresses/1');
-    await settle((req) => (req.request.url.endsWith('/1') ? address : [address]));
+    await settle((req) => (req.request.url.endsWith('/1') ? empty : [empty]));
 
     button('Edit address').click();
     harness.detectChanges();
     expect(panel().querySelector('h2')!.textContent).toContain('Edit address');
-    expect(input(0).value).toBe('12 Elm Street');
+    expect(panel().querySelector('app-household-fields')).toBeNull();
+    expect(field('street1').value).toBe('12 Elm Street');
 
-    type(input(2), 'Shelbyville ');
-    type(input(5), '2025');
+    type(field('city'), 'Shelbyville ');
+    type(field('lastSent'), '2025');
     button('Save').click();
     seen = [];
-    await settle((req) => (req.request.method === 'PATCH' || req.request.url.endsWith('/1') ? address : [address]));
+    await settle((req) => (req.request.method === 'PATCH' || req.request.url.endsWith('/1') ? empty : [empty]));
 
     const patch = seen.find((req) => req.request.method === 'PATCH')!;
     expect(patch.request.url).toMatch(/addresses\/1$/);
     expect(patch.request.body.address).toEqual(jasmine.objectContaining({ city: 'Shelbyville', lastSent: '2025' }));
     // The panel and the list both fetch again.
     expect(seen.filter((req) => req.request.method === 'GET').length).toBe(2);
+    expect(panel().querySelector('form')).toBeNull();
+  });
+
+  it('edits the household and the address together', async () => {
+    const household = {
+      ...address,
+      addressee: {
+        ...ADDRESS_1.addressee!, id: 'p1', firstName: 'Alice', lastName: 'Martin', suffix: '',
+        spouse: { ...ADDRESS_1.addressee!, id: 's1', firstName: 'Ben', lastName: 'Martin' },
+        children: [{ ...ADDRESS_1.addressee!, id: 'k1', firstName: 'Chloe', lastName: 'Martin' }],
+      },
+    };
+    await harness.navigateByUrl('/addresses/1');
+    await settle((req) => (req.request.url.endsWith('/1') ? household : [household]));
+
+    button('Edit address').click();
+    harness.detectChanges();
+    const names = Array.from(panel().querySelectorAll('app-household-fields input') as NodeListOf<HTMLInputElement>)
+      .map((el) => el.value);
+    expect(names).toEqual(['Alice', 'Martin', '', 'Ben', 'Martin', 'Chloe', 'Martin']);
+
+    type(panel().querySelectorAll('app-household-fields input')[5] as HTMLInputElement, 'Chloé');
+    type(field('street1'), '14 Elm Street');
+    button('Save').click();
+    seen = [];
+    await settle((req) => (req.request.method === 'PATCH' || req.request.url.endsWith('/1') ? household : [household]));
+
+    const patch = seen.find((req) => req.request.method === 'PATCH')!;
+    expect(patch.request.url).toMatch(/people\/p1$/);
+    const person = patch.request.body.person;
+    expect(person.children_attributes).toEqual([{ id: 'k1', firstName: 'Chloé', lastName: 'Martin' }]);
+    expect(person.address_attributes).toEqual(jasmine.objectContaining({ id: '1', street1: '14 Elm Street' }));
     expect(panel().querySelector('form')).toBeNull();
   });
 

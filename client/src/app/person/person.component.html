@@ -4,82 +4,12 @@
   <p class="muted">This person couldn't be loaded.</p>
 } @else if (model(); as person) {
   @if (editing()) {
-    <form class="edit-form" [formGroup]="form" (ngSubmit)="saveHousehold()">
+    <form class="edit-form" (submit)="$event.preventDefault(); saveHousehold()">
       <h2>Edit household</h2>
 
-      <div class="field-row">
-        <label class="grow">
-          First name
-          <input formControlName="firstName" />
-        </label>
-        <label class="grow">
-          Last name
-          <input formControlName="lastName" />
-        </label>
-        <label class="short">
-          Suffix
-          <input formControlName="suffix" />
-        </label>
-      </div>
+      <app-household-fields [household]="household" />
 
-      <div class="section-head">
-        <h3>Spouse</h3>
-        @if (canAddSpouse()) {
-          <button type="button" class="icon-button" title="Add spouse" aria-label="Add spouse" (click)="addSpouse()">
-            <app-icon name="add" />
-          </button>
-        }
-      </div>
-      <div formArrayName="spouse">
-        @for (spouse of spouseArray.controls; track spouse) {
-          <div class="field-row member" [formGroupName]="$index">
-            <label class="grow">
-              First name
-              <input formControlName="firstName" />
-            </label>
-            <label class="grow">
-              Last name
-              <input formControlName="lastName" />
-            </label>
-            <button type="button" class="icon-button danger" title="Remove spouse" aria-label="Remove spouse" (click)="removeSpouse()">
-              <app-icon name="delete" />
-            </button>
-          </div>
-        } @empty {
-          <p class="muted">No spouse.</p>
-        }
-      </div>
-
-      <div class="section-head">
-        <h3>Children</h3>
-        <button type="button" class="icon-button" title="Add child" aria-label="Add child" (click)="addChild()">
-          <app-icon name="add" />
-        </button>
-      </div>
-      <div formArrayName="children">
-        @for (child of childArray.controls; track child) {
-          <div class="field-row member" [formGroupName]="$index">
-            <label class="grow">
-              First name
-              <input formControlName="firstName" />
-            </label>
-            <label class="grow">
-              Last name
-              <input formControlName="lastName" />
-            </label>
-            <button type="button" class="icon-button danger" title="Remove child" [attr.aria-label]="'Remove ' + (child.value.firstName || 'child')" (click)="removeChild($index)">
-              <app-icon name="delete" />
-            </button>
-          </div>
-        } @empty {
-          <p class="muted">No children.</p>
-        }
-      </div>
-
-      @if (removedIds().length) {
-        <p class="muted">Removed people are deleted from the address book when you save.</p>
-      }
-      @if (form.touched && form.invalid) {
+      @if (household.form.touched && household.invalid) {
         <p class="form-error" role="alert">Every person needs a first name.</p>
       }
       @if (saveError()) {
@@ -124,7 +54,7 @@
     @if (person.children.length) {
       <h3>Children</h3>
       <ul class="children">
-        @for (child of person.children; track child.id) {
+        @for (child of children(); track child.id) {
           <li>{{ child.firstName }} {{ child.lastName }}</li>
         }
       </ul>

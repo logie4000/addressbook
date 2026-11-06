@@ -125,7 +125,7 @@ class Api::V1::PeopleController < ApplicationController
     # Only allow a list of trusted parameters through.
     def person_params
       params.expect(person: [ :lastName, :firstName, :suffix, :address_id, :parent_id, :spouse_id,
-        address_attributes: [ :id, :street1, :street2, :city, :state, :zip, :lastSent, :_destroy ],
+        address_attributes: [ :id, :street1, :street2, :city, :state, :zip, :lastSent, :comments, :_destroy ],
         spouse_attributes: [ :id, :lastName, :firstName, :suffix, :_destroy ],
         children_attributes: [ [ :id, :lastName, :firstName, :suffix, :_destroy ] ] ])
     end
