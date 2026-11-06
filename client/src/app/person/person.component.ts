@@ -1,4 +1,4 @@
-import { Component, computed } from '@angular/core';
+import { Component, computed, ChangeDetectionStrategy } from '@angular/core';
 import { ModelComponent } from '../shared/model.component';
 import { Person } from '../models/person';
 import { fullCityStateZip } from '../models/address';
@@ -9,14 +9,14 @@ import { PersonService } from '../models/person.service';
   selector: 'app-person',
   imports: [],
   templateUrl: './person.component.html',
-  styleUrl: './person.component.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './person.component.css',
 })
 export class PersonComponent extends ModelComponent<Person> {
-
   constructor(activatatedRoute: ActivatedRoute, modelService: PersonService) {
     super(activatatedRoute, modelService);
   }
-  
+
   title = computed(() => {
     var person = this.model();
 
@@ -28,14 +28,14 @@ export class PersonComponent extends ModelComponent<Person> {
       }
     }
   });
-  
+
   full_address = computed(() => {
     var address = this.model()?.address;
 
     if (address) {
       return fullCityStateZip(address);
     } else {
-      return "NO ADDRESS"
+      return 'NO ADDRESS';
     }
   });
 }

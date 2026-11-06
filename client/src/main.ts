@@ -1,3 +1,4 @@
+import { provideZoneChangeDetection } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
@@ -7,7 +8,11 @@ loadRuntimeConfig()
   .then((runtimeConfig) =>
     bootstrapApplication(AppComponent, {
       ...appConfig,
-      providers: [...appConfig.providers, { provide: RUNTIME_CONFIG, useValue: runtimeConfig }],
+      providers: [
+        provideZoneChangeDetection(),
+        ...appConfig.providers,
+        { provide: RUNTIME_CONFIG, useValue: runtimeConfig },
+      ],
     }),
   )
   .catch((err) => console.error(err));

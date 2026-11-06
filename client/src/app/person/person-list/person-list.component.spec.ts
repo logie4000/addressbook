@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PersonListComponent } from './person-list.component';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('PersonListComponent', () => {
@@ -10,13 +10,9 @@ describe('PersonListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [
-          provideHttpClient(),
-          provideHttpClientTesting(),
-      ],
-      imports: [PersonListComponent]
-    })
-    .compileComponents();
+      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
+      imports: [PersonListComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PersonListComponent);
     component = fixture.componentInstance;
