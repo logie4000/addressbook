@@ -45,4 +45,25 @@ describe('Address routes', () => {
     expect(panel().textContent).toContain('Last sent');
     expect(harness.routeNativeElement!.querySelector('a.card.selected')).not.toBeNull();
   });
+
+  it('opens a person in the panel beside the People list', async () => {
+    await harness.navigateByUrl('/people/p1');
+    for (let round = 0; round < 3; round++) {
+      http.match(() => true).forEach((req) =>
+        req.flush(req.request.url.endsWith('/p1')
+          ? { ...ADDRESS_1.addressee!, id: 'p1', firstName: 'Alice', lastName: 'Martin',
+              address: { ...ADDRESS_1, id: 'a1', street1: '12 Elm Street' },
+              children: [{ ...ADDRESS_1.addressee!, id: 'k1', firstName: 'Chloe', lastName: 'Martin' }] }
+          : [{ ...ADDRESS_1.addressee!, id: 'p1', firstName: 'Alice', lastName: 'Martin' }]));
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+    }
+
+    expect(panel().hidden).toBeFalse();
+    expect(panel().querySelector('h2')!.textContent).toContain('Alice Martin');
+    expect(panel().textContent).toContain('12 Elm Street');
+    expect(panel().querySelector('a.link')!.getAttribute('href')).toBe('/addresses/a1');
+    expect(panel().textContent).toContain('Chloe Martin');
+    expect(harness.routeNativeElement!.querySelector('a.row.selected')).not.toBeNull();
+  });
 });

@@ -1,41 +1,37 @@
 import { Component, computed, ChangeDetectionStrategy } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ModelComponent } from '../shared/model.component';
 import { Person } from '../models/person';
-import { fullCityStateZip } from '../models/address';
-import { ActivatedRoute } from '@angular/router';
+import { fullCityStateZip, fullStreetAddress } from '../models/address';
 import { PersonService } from '../models/person.service';
 
 @Component({
   selector: 'app-person',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './person.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './person.component.css',
 })
 export class PersonComponent extends ModelComponent<Person> {
-  constructor(activatatedRoute: ActivatedRoute, modelService: PersonService) {
-    super(activatatedRoute, modelService);
+  constructor(activatedRoute: ActivatedRoute, modelService: PersonService) {
+    super(activatedRoute, modelService);
   }
 
-  title = computed(() => {
-    var person = this.model();
-
-    if (person) {
-      var ret_val = person.lastName;
-
-      if (person.spouse && person.spouse.lastName != person.lastName) {
-        ret_val += `/${person.spouse.lastName}`;
-      }
+  fullName = computed(() => {
+    const person = this.model();
+    if (!person) {
+      return '';
     }
+    return [person.firstName, person.lastName, person.suffix].filter((part) => !!part).join(' ');
   });
 
-  full_address = computed(() => {
-    var address = this.model()?.address;
+  streetAddress = computed(() => {
+    const address = this.model()?.address;
+    return address ? fullStreetAddress(address) : '';
+  });
 
-    if (address) {
-      return fullCityStateZip(address);
-    } else {
-      return 'NO ADDRESS';
-    }
+  cityStateZip = computed(() => {
+    const address = this.model()?.address;
+    return address ? fullCityStateZip(address) : '';
   });
 }

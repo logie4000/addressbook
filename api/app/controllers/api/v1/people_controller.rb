@@ -1,14 +1,16 @@
 class Api::V1::PeopleController < ApplicationController
   before_action :set_person, only: %i[ show update destroy ]
 
-  INDEX_FIELDS = %w[ id firstName lastName spouse_id address_id ].freeze
+  INDEX_FIELDS = %w[ id firstName lastName suffix spouse_id address_id ].freeze
+  ADDRESS_FIELDS = %w[ id street1 street2 city state zip ].freeze
 
   # GET /people
   #
-  # Reads the table once and works out spouses and children in memory,
-  # rather than making a DynamoDB request per person.
+  # Reads each table once and works out spouses, children and addresses in
+  # memory, rather than making a DynamoDB request per person.
   def index
     all_people = Person.all.to_a
+    addresses = Address.all.index_by(&:id)
     by_id = all_people.index_by(&:id)
     children_by_parent = all_people.group_by(&:parent_id)
 
@@ -17,7 +19,8 @@ class Api::V1::PeopleController < ApplicationController
 
       person.attributes.stringify_keys.slice(*INDEX_FIELDS).merge(
         "spouse" => spouse && name_fields(spouse),
-        "children" => Array(children_by_parent[person.id]).map { |child| name_fields(child) }
+        "children" => Array(children_by_parent[person.id]).map { |child| name_fields(child) },
+        "address" => addresses[person.address_id]&.attributes&.stringify_keys&.slice(*ADDRESS_FIELDS)
       )
     end
 
@@ -25,6 +28,9 @@ class Api::V1::PeopleController < ApplicationController
   end
 
   # GET /people/1
+  #
+  # Shows the person's household: asking for a spouse or child returns the
+  # household head (see set_person).
   def show
     address = @person.address
     spouse = @person.spouse
@@ -37,7 +43,7 @@ class Api::V1::PeopleController < ApplicationController
     render json: @person.attributes.stringify_keys.slice("id", "firstName", "lastName", "suffix").merge(
       "spouse" => spouse && name_fields(spouse),
       "children" => children.map { |child| name_fields(child) },
-      "address" => address && address.attributes.stringify_keys.slice("id", "street1", "street2", "city", "state", "zip")
+      "address" => address && address.attributes.stringify_keys.slice(*ADDRESS_FIELDS)
     )
   end
 

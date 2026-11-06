@@ -22,6 +22,9 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     ann = body.find { |p| p["id"] == @person.id }
     assert_equal "Bob", ann.dig("spouse", "firstName")
     assert_equal [ "Cal" ], ann["children"].map { |c| c["firstName"] }
+    assert_equal "1 Main St", ann.dig("address", "street1")
+    assert_equal "Springfield", ann.dig("address", "city")
+    assert_nil body.find { |p| p["firstName"] == "Al" }["address"]
   end
 
   test "should create person with nested address, spouse and children" do

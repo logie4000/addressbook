@@ -1,3 +1,13 @@
-<h1>People</h1>
+<div class="split" [class.with-panel]="panelOpen()">
+  <section>
+    <div class="page-heading">
+      <h1>People</h1>
+    </div>
+    <app-person-list [itemList]="getValues()" />
+  </section>
 
-<app-person-list [itemList]="getValues()" />
+  <aside class="panel" [hidden]="!panelOpen()" aria-label="Person details">
+    <a class="close" routerLink="/people" aria-label="Close details">&times;</a>
+    <router-outlet (activate)="panelOpen.set(true)" (deactivate)="panelOpen.set(false)" />
+  </aside>
+</div>

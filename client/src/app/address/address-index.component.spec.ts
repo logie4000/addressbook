@@ -38,7 +38,7 @@ describe('AddressIndexComponent', () => {
 
     button('List').click();
     fixture.detectChanges();
-    expect(page.querySelector('.list')).not.toBeNull();
+    expect(page.querySelector('.row-list')).not.toBeNull();
     expect(page.querySelector('ul.cards')).toBeNull();
     expect(button('List').getAttribute('aria-pressed')).toBe('true');
     expect(localStorage.getItem('addressbook.addressView')).toBe('list');

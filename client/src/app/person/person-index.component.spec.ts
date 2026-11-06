@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PersonIndexComponent } from './person-index.component';
@@ -10,7 +11,7 @@ describe('PersonIndexComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
+      providers: [provideHttpClient(withXhr()), provideHttpClientTesting(), provideRouter([])],
       imports: [PersonIndexComponent],
     }).compileComponents();
 

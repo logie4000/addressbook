@@ -15,9 +15,7 @@ export const routes: Routes = [
   {
     path: 'people',
     component: PersonIndexComponent,
-  },
-  {
-    path: 'people/:id',
-    component: PersonComponent,
+    // A person's details open in a panel beside the list.
+    children: [{ path: ':id', component: PersonComponent }],
   },
 ];

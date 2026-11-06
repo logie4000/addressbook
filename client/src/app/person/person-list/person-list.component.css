@@ -1,0 +1,10 @@
+:host {
+  display: block;
+  /* Columns follow the space the list has (see .row-list in styles.css). */
+  container-type: inline-size;
+  --row-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.street {
+  white-space: pre-line;
+}

@@ -1,8 +1,29 @@
-<p>
-  <div id="title">{{ title() }}</div>
-  <div id="address">
-    {{ full_address() }}
-  </div>
+@if (isLoading()) {
+  <p class="muted">Loading…</p>
+} @else if (error()) {
+  <p class="muted">This person couldn't be loaded.</p>
+} @else if (model(); as person) {
+  <h2>{{ fullName() }}</h2>
+  @if (person.spouse; as spouse) {
+    <p class="names">Spouse: {{ spouse.firstName }} {{ spouse.lastName }}</p>
+  }
 
-<p>
-<strong>Children:</strong>
+  @if (person.address; as address) {
+    <address>
+      <span class="street">{{ streetAddress() }}</span>
+      <span>{{ cityStateZip() }}</span>
+    </address>
+    <p><a class="link" [routerLink]="['/addresses', address.id]">View address</a></p>
+  } @else {
+    <p class="muted">No address on file.</p>
+  }
+
+  @if (person.children.length) {
+    <h3>Children</h3>
+    <ul class="children">
+      @for (child of person.children; track child.id) {
+        <li>{{ child.firstName }} {{ child.lastName }}</li>
+      }
+    </ul>
+  }
+}

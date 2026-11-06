@@ -25,3 +25,263 @@ h1 {
   font-weight: 600;
   margin: 1.5rem 0 1rem;
 }
+
+/* --- List with a details panel on the right (Addresses, People) ---------- */
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.split.with-panel {
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 26rem);
+}
+
+/* Page heading with controls (e.g. the view switch) beside it. */
+
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.view-switch {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.view-switch button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.35rem 0.9rem;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.view-switch button + button {
+  border-left: 1px solid var(--color-border);
+}
+
+.view-switch button.active {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.panel {
+  position: sticky;
+  top: 1rem;
+  margin-top: 1.5rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 1.25rem 1.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.06);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.panel .close {
+  float: right;
+  margin: -0.5rem -0.75rem 0 0.5rem;
+  padding: 0 0.5rem;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.panel .close:hover {
+  color: var(--color-text);
+}
+
+/* Narrow screens: the details cover the page, with the close button on top. */
+@media (max-width: 720px) {
+  .split.with-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .panel {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    margin: 0;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+  }
+}
+
+/* --- Row lists (Addresses list view, People) ------------------------------ */
+
+.row-list {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.row-list-header,
+.row {
+  display: grid;
+  grid-template-columns: var(--row-columns, minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+}
+
+.row-list-header {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.row {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover,
+.row:focus-visible {
+  background: var(--color-page);
+  outline: none;
+}
+
+.row.selected {
+  background: var(--color-accent-soft);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.row-list .sent {
+  text-align: right;
+}
+
+.row .sent {
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.row .name {
+  font-weight: 600;
+}
+
+.row-list .empty {
+  margin: 0;
+  padding: 1rem;
+}
+
+/* Narrow: each address stacks onto three lines. */
+@container (max-width: 560px) {
+  .row-list-header {
+    display: none;
+  }
+
+  .row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 1rem;
+    row-gap: 0;
+  }
+
+  .row .name,
+  .row .street,
+  .row .city {
+    grid-column: 1;
+  }
+
+  /* Last sent stays on the right, beside the name. */
+  .row .sent {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+/* --- Details shown in the panel ------------------------------------------- */
+
+.panel h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.panel .names {
+  margin: 0.25rem 0 0;
+  color: var(--color-muted);
+}
+
+.panel address {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+  font-style: normal;
+}
+
+.panel .street {
+  white-space: pre-line;
+}
+
+.panel h3 {
+  margin: 1.25rem 0 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+}
+
+.panel .children {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.panel dl {
+  margin: 1.25rem 0 0;
+}
+
+.panel dt {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+}
+
+.panel dd {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.panel .muted {
+  color: var(--color-muted);
+}
+
+.panel .link {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.panel .link:hover {
+  text-decoration: underline;
+}

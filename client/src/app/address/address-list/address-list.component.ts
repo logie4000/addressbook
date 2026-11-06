@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, computed, input } from '@angular/core';
 import { ModelListComponent } from '../../shared/model-list.component';
+import { compareText } from '../../shared/compare-text';
 import { AddressService } from '../../models/address.service';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import {
@@ -87,8 +88,4 @@ export class AddressListComponent extends ModelListComponent<Address> {
   getCityStateZip(address: Address) {
     return `${fullCityStateZip(address)}`;
   }
-}
-
-function compareText(a: string | undefined, b: string | undefined): number {
-  return (a ?? '').localeCompare(b ?? '', undefined, { sensitivity: 'base' });
 }
