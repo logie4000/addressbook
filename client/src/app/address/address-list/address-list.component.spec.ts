@@ -47,7 +47,7 @@ describe('AddressListComponent', () => {
     expect(text).toContain('Martin');
     expect(text).toContain('12 Elm Street');
     expect(text).toContain('Springfield, IL');
-    expect(text).toContain('Last sent 2025');
+    expect(text).toContain('Last sent Dec 2025');
   });
 
   it('says so when there are no addresses', () => {
@@ -85,8 +85,8 @@ describe('AddressListComponent', () => {
     it('shows one row per address, ordered by last name', () => {
       expect(rows()).toEqual([
         ['martin, Alice (Ben)', '12 Elm Street', 'Springfield, IL 62701', '—'],
-        ['Okafor, Grace', '7 Harbor Road', 'Portland, ME 04101', '2025'],
-        ['Rivera, Carlos (Dana Smith)', '400 Lakeview Drive', 'Madison, WI 53703', '2024'],
+        ['Okafor, Grace', '7 Harbor Road', 'Portland, ME 04101', 'Dec 2025'],
+        ['Rivera, Carlos (Dana Smith)', '400 Lakeview Drive', 'Madison, WI 53703', 'Dec 2024'],
       ]);
     });
 

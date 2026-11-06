@@ -19,7 +19,7 @@
         <span class="street">{{ getStreetAddress(address) }}</span>
         <span class="city">{{ getCityStateZip(address) }}</span>
         <span class="sent">
-          <span class="year">{{ sentYear(address) || '—' }}</span>
+          <span class="year">{{ (address.lastSent | date: 'MMM y') || '—' }}</span>
           <span class="row-actions">
             <button type="button" class="icon-button small" title="Edit" [attr.aria-label]="'Edit ' + getListName(address)" (click)="editAddress(address)">
               <app-icon name="edit" />
@@ -59,7 +59,7 @@
             <span>{{ getCityStateZip(address) }}</span>
           </address>
           @if (address.lastSent) {
-            <p class="last-sent">Last sent {{ sentYear(address) }}</p>
+            <p class="last-sent">Last sent {{ address.lastSent | date: 'MMM y' }}</p>
           }
         </a>
       </li>

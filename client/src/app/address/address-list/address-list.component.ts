@@ -5,6 +5,7 @@ import { ModelListComponent } from '../../shared/model-list.component';
 import { compareText } from '../../shared/compare-text';
 import { AddressService } from '../../models/address.service';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { DatePipe } from '@angular/common';
 import {
   Address,
   fullCityStateZip,
@@ -17,7 +18,7 @@ export type AddressView = 'cards' | 'list';
 
 @Component({
   selector: 'app-address-list',
-  imports: [RouterLink, RouterLinkActive, IconComponent],
+  imports: [RouterLink, RouterLinkActive, DatePipe, IconComponent],
   templateUrl: './address-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './address-list.component.css',
