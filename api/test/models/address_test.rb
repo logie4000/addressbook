@@ -15,5 +15,17 @@ class AddressTest < ActiveSupport::TestCase
     address.lastSent = ""
     address.save!
     assert_nil address.lastSent
+
+    address.lastSent = nil
+    address.save!
+    assert_nil address.lastSent
+  end
+
+  test "sent_date returns December 21 for a bare year, otherwise casts to date or nil" do
+    assert_equal Date.new(2024, 12, 21), Address.sent_date("2024")
+    assert_equal Date.new(2024, 12, 21), Address.sent_date(2024)
+    assert_equal Date.new(2025, 3, 4), Address.sent_date("2025-03-04")
+    assert_nil Address.sent_date(nil)
+    assert_nil Address.sent_date("")
   end
 end
