@@ -25,7 +25,11 @@ class Address
   # "2024") stands for December 21 of that year; anything else is cast as a
   # date as usual.
   def self.sent_date(value)
-    value.to_s.strip.match?(/\A\d{4}\z/) ? Date.new(value.to_i, 12, 21) : value
+    begin
+      value.to_s.strip.match?(/\A\d{4}\z/) ? Date.new(value.to_i, 12, 21) : Date.parse(value.to_s)
+    rescue
+      value.present? ? value : nil
+    end
   end
 
   def write_attribute(name, value)
