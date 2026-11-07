@@ -18,7 +18,8 @@ class Api::V1::AddressesController < ApplicationController
       # Children hang off one parent; check the spouse too, as show does.
       children = addressee && (children_by_parent[addressee.id] || (spouse && children_by_parent[spouse.id]))
 
-      address.attributes.stringify_keys.slice(*INDEX_FIELDS).merge(
+      # Every field, null included, so a never-sent address has "lastSent": null.
+      INDEX_FIELDS.index_with { |field| address.read_attribute(field) }.merge(
         "addressee" => addressee && name_fields(addressee).merge(
           "spouse" => spouse && name_fields(spouse),
           "children" => Array(children).map { |child| name_fields(child) }

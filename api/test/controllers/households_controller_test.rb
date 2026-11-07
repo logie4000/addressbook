@@ -32,6 +32,7 @@ class HouseholdsControllerTest < ActionDispatch::IntegrationTest
     assert_equal %w[Cal Dee], zeta["children"].map { |c| c["firstName"] }
 
     assert_nil body["households"].first["spouse"]
+    assert_nil body["households"].first["lastSent"], "never sent"
     assert_empty body["households"].first["children"]
   end
 end

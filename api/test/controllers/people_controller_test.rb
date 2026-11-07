@@ -157,4 +157,38 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :no_content
   end
+
+  # --- Last sent through the household form (nested address) --------------
+
+  test "should create a person with a nested address and a blank last sent" do
+    post api_v1_people_url, params: { person: {
+      firstName: "Dee", lastName: "Delta",
+      address_attributes: { street1: "7 Pine Rd", city: "Capital City", lastSent: "" }
+    } }, as: :json
+
+    assert_response :created
+    assert_nil Person.find(response.parsed_body["id"]).address.lastSent
+  end
+
+  test "should clear last sent through the household form" do
+    @address.update_attributes!(lastSent: "2024")
+
+    patch api_v1_person_url(@person), params: { person: {
+      firstName: "Ann", address_attributes: { id: @address.id, street1: "1 Main St", lastSent: "" }
+    } }, as: :json
+
+    assert_response :success
+    assert_nil Address.find(@address.id).lastSent
+  end
+
+  test "should reject a bad last sent in the household form without saving anything" do
+    patch api_v1_person_url(@person), params: { person: {
+      firstName: "Annie", address_attributes: { id: @address.id, street1: "2 Main St", lastSent: "soon" }
+    } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body["address.lastSent"].join, "is not a date"
+    assert_equal "Ann", Person.find(@person.id).firstName
+    assert_equal "1 Main St", Address.find(@address.id).street1
+  end
 end

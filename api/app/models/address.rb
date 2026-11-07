@@ -1,7 +1,7 @@
 # A mailing address, stored in the DynamoDB "addresses" table.
 #
 #   addressee_id  the Person the mail is addressed to
-#   lastSent      the date a card was last sent (see .sent_date)
+#   lastSent      the date a card was last sent (a Date; see SentDate)
 #
 # The people living here (residents) are found through the people table's
 # "address_id-index".
@@ -16,24 +16,25 @@ class Address
   field :state
   field :zip
   field :comments
-  field :lastSent, :date
+  field :lastSent, SentDate
   field :addressee_id
 
   before_destroy :destroy_residents
+  validate :last_sent_is_a_date
 
-  # The old app kept only the year a card was sent. A bare year (2024 or
-  # "2024") stands for December 21 of that year; anything else is cast as a
-  # date as usual.
+  # A bare year (2024 or "2024") means December 21 of that year; see SentDate.
   def self.sent_date(value)
-    begin
-      value.to_s.strip.match?(/\A\d{4}\z/) ? Date.new(value.to_i, 12, 21) : Date.parse(value.to_s)
-    rescue
-      value.present? ? value : nil
-    end
+    SentDate.parse(value)
   end
 
+  # Keeps lastSent a Date or nil. Text that isn't a date is remembered so
+  # validation can reject it, instead of being dropped silently.
   def write_attribute(name, value)
-    value = self.class.sent_date(value) if name.to_sym == :lastSent
+    if name.to_sym == :lastSent
+      parsed = SentDate.parse(value)
+      @invalid_last_sent = (value if parsed.nil? && value.to_s.strip.present?)
+      value = parsed
+    end
     super
   end
 
@@ -58,6 +59,10 @@ class Address
   end
 
   private
+    def last_sent_is_a_date
+      errors.add(:lastSent, "is not a date (use YYYY-MM-DD or a year)") if @invalid_last_sent
+    end
+
     # Matches the old `has_many :residents, dependent: :destroy`.
     def destroy_residents
       residents.each(&:destroy)
