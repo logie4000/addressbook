@@ -21,6 +21,8 @@ class Address
 
   before_destroy :destroy_residents
 
+  normalizes :lastSent, with: ->(d) { d.blank? ? nil : d }
+
   # The old app kept only the year a card was sent. A bare year (2024 or
   # "2024") stands for December 21 of that year; anything else is cast as a
   # date as usual.
