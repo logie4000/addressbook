@@ -29,7 +29,7 @@ class Address
   end
 
   def write_attribute(name, value)
-    value = self.class.sent_date(value) if (name.to_sym == :lastSent && value.present?)
+    value = self.class.sent_date(value) if (name.to_sym == :lastSent) # && value.present?)
     super
   end
 

@@ -9,9 +9,11 @@ class AddressTest < ActiveSupport::TestCase
     assert_equal Date.new(2025, 3, 4), Address.find(address.id).lastSent
 
     address.lastSent = 2023
+    address.save!
     assert_equal Date.new(2023, 12, 21), address.lastSent
 
     address.lastSent = ""
+    address.save!
     assert_nil address.lastSent
   end
 end
