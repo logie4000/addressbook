@@ -10,7 +10,7 @@ gem "aws-sdk-dynamodb", "~> 1.0"
 # Run the Rails app inside AWS Lambda, behind API Gateway [https://lamby.cloud]
 gem "lamby", "~> 7.0", require: false
 # Read the Rails secret from SSM Parameter Store when running in Lambda
-gem "aws-sdk-ssm", "~> 1.0", require: false
+gem "aws-sdk-ssm", "~> 1.230", require: false
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
