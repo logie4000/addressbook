@@ -24,6 +24,7 @@ class Person
   global_secondary_index hash_key: :parent_id, name: "parent_id-index", projected_attributes: :all
   global_secondary_index hash_key: :address_id, name: "address_id-index", projected_attributes: :all
 
+  validate :nested_address_is_valid
   before_save :save_nested_belongs_to
   after_save :save_nested_children
   before_destroy :clear_references_to_self
@@ -103,6 +104,16 @@ class Person
   end
 
   private
+    # A nested address (address_attributes) is saved with save!, so check it
+    # here first: a bad value then comes back as a 422 with the person's
+    # errors, e.g. "address.lastSent", rather than an exception.
+    def nested_address_is_valid
+      record, destroy = @pending_address
+      return if record.nil? || destroy || record.valid?
+
+      record.errors.each { |error| errors.add(:"address.#{error.attribute}", error.message) }
+    end
+
     # Address and spouse are saved first so their ids can be stored on this person.
     def save_nested_belongs_to
       if (pending = @pending_address)

@@ -68,3 +68,32 @@
     }
   </ul>
 }
+
+<!-- Compact paper layout, shown only when printing (see the CSS). -->
+<table class="print-sheet">
+  <caption>{{ sorted().length }} addresses · printed {{ today | date: 'MMM d, y' }}</caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Address</th>
+      <th class="sent">Last sent</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (address of sorted(); track address.id) {
+      <tr>
+        <td>
+          <span class="name">{{ getListName(address) }}</span>
+          @if (getChildNames(address); as children) {
+            <span class="children">{{ children }}</span>
+          }
+        </td>
+        <td>
+          <span class="street">{{ getStreetAddress(address).replace('\n', ', ') }}</span><br />
+          <span class="city">{{ getCityStateZip(address) }}</span>
+        </td>
+        <td class="sent">{{ address.lastSent | date: 'MMM y' }}</td>
+      </tr>
+    }
+  </tbody>
+</table>

@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AddressIndexComponent } from './address-index.component';
 import { provideHttpClient, withXhr } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AddressService } from '../models/address.service';
 
 describe('AddressIndexComponent', () => {
@@ -45,5 +45,45 @@ describe('AddressIndexComponent', () => {
 
     const again = TestBed.createComponent(AddressIndexComponent);
     expect(again.componentInstance.view()).toBe('list');
+  });
+
+  it('exports the address book as JSON or vCard', async () => {
+    const http = TestBed.inject(HttpTestingController);
+    const blobs: Blob[] = [];
+    spyOn(URL, 'createObjectURL').and.callFake((blob: Blob | MediaSource) => {
+      blobs.push(blob as Blob);
+      return 'blob:x';
+    });
+    spyOn(URL, 'revokeObjectURL');
+    const clicked: string[] = [];
+    spyOn(HTMLAnchorElement.prototype, 'click').and.callFake(function (this: HTMLAnchorElement) {
+      clicked.push(this.download);
+    });
+    const file = {
+      format: 'addressbook-households', version: 1, exportedAt: '2026-11-06T00:00:00Z',
+      households: [{ id: 'h1', street1: '1 Main St', street2: null, city: 'Springfield', state: 'IL', zip: '62701',
+        lastSent: null, comments: null, addressee: { id: 'p1', firstName: 'Ann', lastName: 'Zeta', suffix: null },
+        spouse: null, children: [] }],
+    };
+    const item = (text: string) =>
+      Array.from(fixture.nativeElement.querySelectorAll('.menu-items button') as NodeListOf<HTMLButtonElement>).find((b) => b.textContent!.includes(text))!;
+
+    item('JSON').click();
+    http.expectOne((r) => r.url.endsWith('/households')).flush(file);
+    item('vCard').click();
+    http.expectOne((r) => r.url.endsWith('/households')).flush(file);
+    const saved = await Promise.all(blobs.map((blob) => blob.text()));
+
+    expect(clicked.length).toBe(2);
+    expect(clicked[0]).toMatch(/^address-book-\d{4}-\d{2}-\d{2}\.json$/);
+    expect(clicked[1]).toMatch(/\.vcf$/);
+    expect(JSON.parse(saved[0]).format).toBe('addressbook-households');
+    expect(saved[1]).toContain('FN:Ann Zeta');
+  });
+
+  it('prints from the Print button', () => {
+    const print = spyOn(window, 'print');
+    (fixture.nativeElement.querySelector('button[aria-label="Print"]') as HTMLButtonElement).click();
+    expect(print).toHaveBeenCalled();
   });
 });

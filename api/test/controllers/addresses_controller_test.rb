@@ -79,4 +79,73 @@ class AddressesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :no_content
   end
+
+  # --- Last sent: blank, cleared, bad and older values ---------------------
+
+  test "index and show return null for an address never sent" do
+    get api_v1_addresses_url, as: :json
+    assert_response :success
+    alpha = response.parsed_body.find { |a| a["id"] == @other.id }
+    assert alpha.key?("lastSent")
+    assert_nil alpha["lastSent"]
+
+    get api_v1_address_url(@other), as: :json
+    assert_response :success
+    assert_nil response.parsed_body["lastSent"]
+  end
+
+  test "should create an address with a blank last sent" do
+    post api_v1_addresses_url, params: { address: { street1: "5 Oak Ave", city: "Capital City", lastSent: "" } }, as: :json
+
+    assert_response :created
+    assert_nil response.parsed_body["lastSent"]
+    assert_nil Address.find(response.parsed_body["id"]).lastSent
+  end
+
+  test "should create an address with a full date" do
+    post api_v1_addresses_url, params: { address: { street1: "5 Oak Ave", lastSent: "2025-12-02" } }, as: :json
+
+    assert_response :created
+    assert_equal "2025-12-02", response.parsed_body["lastSent"]
+  end
+
+  test "should clear last sent with an empty string, as the date picker sends" do
+    patch api_v1_address_url(@address), params: { address: { lastSent: "" } }, as: :json
+
+    assert_response :success
+    assert_nil response.parsed_body["lastSent"]
+    assert_nil Address.find(@address.id).lastSent
+  end
+
+  test "should clear last sent with null" do
+    patch api_v1_address_url(@address), params: { address: { lastSent: nil } }, as: :json
+
+    assert_response :success
+    assert_nil Address.find(@address.id).lastSent
+  end
+
+  test "should reject a last sent that isn't a date and keep the old one" do
+    patch api_v1_address_url(@address), params: { address: { lastSent: "last Christmas", city: "Ogdenville" } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body["lastSent"].join, "is not a date"
+    address = Address.find(@address.id)
+    assert_equal Date.new(2025, 12, 21), address.lastSent
+    assert_equal "Springfield", address.city
+  end
+
+  test "index and show still work when older records hold a blank or year-only last sent" do
+    Dynamoid.adapter.put_item(Address.table_name, { id: "old-blank", street1: "Old 1", lastSent: "" })
+    Dynamoid.adapter.put_item(Address.table_name, { id: "old-year", street1: "Old 2", lastSent: "2024" })
+
+    get api_v1_addresses_url, as: :json
+    assert_response :success
+    by_id = response.parsed_body.index_by { |a| a["id"] }
+    assert_nil by_id["old-blank"]["lastSent"]
+    assert_equal "2024-12-21", by_id["old-year"]["lastSent"]
+
+    get api_v1_address_url("old-blank"), as: :json
+    assert_response :success
+    assert_nil response.parsed_body["lastSent"]
+  end
 end
