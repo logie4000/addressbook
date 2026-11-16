@@ -5,7 +5,7 @@ gem "rails", "~> 8.1.2"
 
 # Use Amazon DynamoDB for storage, through Dynamoid's ActiveModel-style ORM
 gem "dynamoid", "~> 3.11"
-gem "aws-sdk-dynamodb", "~> 1.0"
+gem "aws-sdk-dynamodb", "~> 1.183"
 
 # Run the Rails app inside AWS Lambda, behind API Gateway [https://lamby.cloud]
 gem "lamby", "~> 7.0", require: false
