@@ -23,16 +23,16 @@ only the `addresses` and `people` tables are read.
 
 The task runs Rails from the `api` folder. Either:
 
-- **Ruby 3.4 installed:** `cd api && bundle install`, then run the commands
+- **Ruby 4.0 installed:** `cd api && bundle install`, then run the commands
   below as written.
 - **Docker only** (works on Windows too). From the repository root, start a
   shell with your AWS credentials mounted read-only:
 
   ```sh
   # Linux / macOS
-  docker run --rm -it -v "$PWD":/app -v "$HOME/.aws":/root/.aws:ro -w /app/api ruby:3.4.12 bash
+  docker run --rm -it -v "$PWD":/app -v "$HOME/.aws":/root/.aws:ro -w /app/api ruby:4.0.10 bash
   # Windows (cmd)
-  docker run --rm -it -v "%cd%":/app -v "%USERPROFILE%\.aws":/root/.aws:ro -w /app/api ruby:3.4.12 bash
+  docker run --rm -it -v "%cd%":/app -v "%USERPROFILE%\.aws":/root/.aws:ro -w /app/api ruby:4.0.10 bash
   ```
 
   Inside it, run `bundle install` once, then the commands below. Copy the

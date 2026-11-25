@@ -5,7 +5,7 @@
 # It starts from AWS's own Lambda Ruby image, which already contains the
 # Lambda runtime client, so Lambda can call config/lambda.rb directly.
 
-FROM public.ecr.aws/lambda/ruby:3.4 AS build
+FROM public.ecr.aws/lambda/ruby:4.0 AS build
 
 # Compilers and headers for gems with native extensions (bootsnap, psych, ...)
 RUN dnf install -y gcc gcc-c++ make libyaml-devel git && dnf clean all
@@ -28,7 +28,7 @@ COPY . .
 RUN bundle exec bootsnap precompile --gemfile app/ lib/ config/
 
 
-FROM public.ecr.aws/lambda/ruby:3.4
+FROM public.ecr.aws/lambda/ruby:4.0
 
 WORKDIR ${LAMBDA_TASK_ROOT}
 
