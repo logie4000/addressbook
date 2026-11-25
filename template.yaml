@@ -192,7 +192,7 @@ Resources:
     Metadata:
       DockerContext: ./api
       Dockerfile: Dockerfile.lambda
-      DockerTag: ruby3.4
+      DockerTag: ruby4.0
     Properties:
       FunctionName: !Sub addressbook-api-${StageName}
       PackageType: Image
