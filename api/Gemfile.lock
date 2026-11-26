@@ -90,8 +90,8 @@ GEM
     aws-sdk-dynamodb (1.187.0)
       aws-sdk-core (~> 3, >= 3.270.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-ssm (1.230.0)
-      aws-sdk-core (~> 3, >= 3.265.0)
+    aws-sdk-ssm (1.237.0)
+      aws-sdk-core (~> 3, >= 3.270.0)
       aws-sigv4 (~> 1.5)
     aws-sigv4 (1.12.1)
       aws-eventstream (~> 1, >= 1.0.2)
@@ -299,9 +299,9 @@ GEM
       ostruct
     stringio (3.2.0)
     thor (1.5.0)
-    thruster (0.1.27)
-    thruster (0.1.27-aarch64-linux)
-    thruster (0.1.27-x86_64-linux)
+    thruster (0.1.28)
+    thruster (0.1.28-aarch64-linux)
+    thruster (0.1.28-x86_64-linux)
     timeout (0.6.1)
     tsort (0.2.0)
     tzinfo (2.0.6)
@@ -332,7 +332,7 @@ PLATFORMS
 
 DEPENDENCIES
   aws-sdk-dynamodb (~> 1.187)
-  aws-sdk-ssm (~> 1.230)
+  aws-sdk-ssm (~> 1.237)
   bootsnap
   brakeman
   bundler-audit
