@@ -87,8 +87,8 @@ GEM
       jmespath (~> 1, >= 1.6.1)
       logger
       rexml (~> 3.4, >= 3.4.2)
-    aws-sdk-dynamodb (1.183.0)
-      aws-sdk-core (~> 3, >= 3.266.0)
+    aws-sdk-dynamodb (1.187.0)
+      aws-sdk-core (~> 3, >= 3.270.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-ssm (1.237.0)
       aws-sdk-core (~> 3, >= 3.270.0)
@@ -331,7 +331,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  aws-sdk-dynamodb (~> 1.183)
+  aws-sdk-dynamodb (~> 1.187)
   aws-sdk-ssm (~> 1.237)
   bootsnap
   brakeman
