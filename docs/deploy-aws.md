@@ -88,6 +88,77 @@ Settings such as the region (`us-east-1`) and stack name live in
 > `Architectures` in `template.yaml` to `arm64`. It also runs about 20%
 > cheaper on Lambda.
 
+## Automatic deploys from GitHub
+
+[`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) deploys
+`main` by itself once all the CI checks pass on it: `sam build`, then
+`sam deploy`, then `scripts/deploy-site.sh`, the same steps as above. Deploys
+run one at a time; if several merges land close together, only the newest
+commit is deployed. You can also start one by hand under **Actions > Deploy >
+Run workflow**.
+
+No AWS keys are stored in GitHub. Each run gets a short-lived token from
+GitHub, and AWS trades it for temporary credentials for the
+`addressbook-github-deploy` role, but only for jobs in this repository's
+`production` environment. That role can update the stack and publish the
+site; CloudFormation makes the actual changes using a second role,
+`addressbook-cloudformation-deploy`. Both are defined in
+[`deploy/github-deploy-role.yaml`](../deploy/github-deploy-role.yaml).
+
+Things to know:
+
+- **Every merge goes live.** That includes Dependabot's minor and patch
+  updates, which merge themselves once CI passes. To check each deploy
+  first, turn on **Required reviewers** in step 2 below; GitHub then emails
+  you and waits for a click before deploying.
+- **Undoing a bad deploy:** open the merged pull request on GitHub, click
+  **Revert**, and merge the pull request it creates. That deploys the
+  previous version. Data in DynamoDB is not rolled back.
+- **The deploy role is powerful.** Anything that can update a stack which
+  creates IAM roles could, in principle, give itself more access in your
+  account. What keeps it safe is that only `main`, through the `production`
+  environment, can use it, which is why step 2 matters.
+
+### One-time setup
+
+1. **Create the two roles** (and GitHub's sign-in provider), from the
+   repository root with your administrator credentials. First check whether
+   the account already has a GitHub provider:
+
+   ```sh
+   aws iam list-open-id-connect-providers
+   ```
+
+   If the output does **not** mention `token.actions.githubusercontent.com`:
+
+   ```sh
+   aws cloudformation deploy --region us-east-1 --stack-name addressbook-github-deploy --template-file deploy/github-deploy-role.yaml --capabilities CAPABILITY_NAMED_IAM
+   ```
+
+   If it does, add `--parameter-overrides CreateOidcProvider=false` to the end
+   of that command.
+
+2. **Create the `production` environment** in GitHub: the repository's
+   **Settings > Environments > New environment**, name it `production`, and
+   click **Configure environment**. Then:
+   - Under **Deployment branches and tags**, choose **Selected branches and
+     tags**, click **Add deployment branch or tag rule**, type `main`, and
+     click **Add rule**. Don't skip this: it is what stops any other branch
+     from deploying.
+   - Optional: tick **Required reviewers**, add yourself, and click **Save
+     protection rules**, to approve each deploy before it runs.
+
+   Create it before merging the workflow. If GitHub creates it on the first
+   run instead, it has no rules.
+
+After that, every merge to `main` deploys by itself. Watch it under
+**Actions > Deploy**.
+
+Deploying from your own computer still works as before (`sam build`, then
+`sam deploy`, then `scripts/deploy-site.sh`). CloudFormation now remembers the
+`addressbook-cloudformation-deploy` role and uses it for your deploys too, so
+a new kind of resource in `template.yaml` may also need adding to that role.
+
 ## Signing in
 
 Only people you create accounts for can use the address book; there is no

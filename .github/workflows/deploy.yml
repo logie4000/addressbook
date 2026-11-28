@@ -1,0 +1,122 @@
+# Deploys main to production after CI passes on it: first the API and the
+# rest of the AWS stack (sam build, then sam deploy), then the website
+# (scripts/deploy-site.sh).
+#
+# No AWS keys are stored in GitHub. The job asks GitHub for a short-lived
+# OpenID Connect token and trades it for temporary AWS credentials for the
+# role created by deploy/github-deploy-role.yaml. AWS only accepts tokens
+# from this repository's "production" environment, and that environment only
+# accepts the main branch. See docs/deploy-aws.md, "Automatic deploys from
+# GitHub", for the one-time setup.
+#
+# Dependabot's minor and patch updates merge by themselves once CI passes
+# (dependabot-automerge.yml), so they deploy by themselves too, unless the
+# production environment requires a reviewer.
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  # Redeploys the latest main by hand: Actions > Deploy > Run workflow.
+  workflow_dispatch:
+
+# One deploy at a time. A deploy that's running is never cancelled; if more
+# are waiting, only the newest one runs.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write # lets the job request the OIDC token for AWS
+
+env:
+  AWS_REGION: us-east-1
+  # Not secret: the account ID is already in samconfig.toml.
+  DEPLOY_ROLE_ARN: arn:aws:iam::470114120012:role/addressbook-github-deploy
+  CLOUDFORMATION_ROLE_ARN: arn:aws:iam::470114120012:role/addressbook-cloudformation-deploy
+
+jobs:
+  deploy:
+    # Only after a successful CI run for a push to main in this repository
+    # (not a pull request, and not a fork's branch that happens to be called
+    # main), or when started by hand from main.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: production
+      url: https://addressbook.specialbrew.net
+    steps:
+      - name: Check out the commit CI tested
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      # If main has moved on since this CI run started, a newer deploy will
+      # follow, so don't put an older commit live on top of it.
+      - name: Skip if this isn't the latest commit on main
+        id: latest
+        run: |
+          latest="$(git ls-remote origin refs/heads/main | cut -f1)"
+          if [ "$latest" = "$(git rev-parse HEAD)" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::main is now at $latest; skipping $(git rev-parse HEAD)."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sign in to AWS
+        if: steps.latest.outputs.deploy == 'true'
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.DEPLOY_ROLE_ARN }}
+          role-session-name: github-deploy-${{ github.run_id }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # --- API and stack ------------------------------------------------------
+
+      - name: Set up the SAM CLI
+        if: steps.latest.outputs.deploy == 'true'
+        uses: aws-actions/setup-sam@v3
+        with:
+          use-installer: true
+
+      # sam build needs the same Python as the pre sign-up function's runtime.
+      - name: Set up Python
+        if: steps.latest.outputs.deploy == 'true'
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: sam build
+        if: steps.latest.outputs.deploy == 'true'
+        run: sam build
+
+      - name: sam deploy
+        if: steps.latest.outputs.deploy == 'true'
+        run: >-
+          sam deploy
+          --no-confirm-changeset
+          --no-fail-on-empty-changeset
+          --role-arn "$CLOUDFORMATION_ROLE_ARN"
+
+      # --- Website --------------------------------------------------------------
+
+      - name: Set up Node.js
+        if: steps.latest.outputs.deploy == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Publish the website
+        if: steps.latest.outputs.deploy == 'true'
+        run: scripts/deploy-site.sh
