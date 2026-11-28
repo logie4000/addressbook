@@ -97,6 +97,12 @@ run one at a time; if several merges land close together, only the newest
 commit is deployed. You can also start one by hand under **Actions > Deploy >
 Run workflow**.
 
+Each successful deploy tags the commit it put live: a permanent
+`deploy-<date>-<run number>` tag (for example `deploy-2026-11-28-5`), and a
+`production` tag that always points at what is live now. See them under the
+repository's **Tags**, or run `git fetch --tags --force` and
+`git log -1 production`.
+
 No AWS keys are stored in GitHub. Each run gets a short-lived token from
 GitHub, and AWS trades it for temporary credentials for the
 `addressbook-github-deploy` role, but only for jobs in this repository's

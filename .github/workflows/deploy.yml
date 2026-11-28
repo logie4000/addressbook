@@ -29,7 +29,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write # pushes the deploy tags at the end
   id-token: write # lets the job request the OIDC token for AWS
 
 env:
@@ -120,3 +120,20 @@ jobs:
       - name: Publish the website
         if: steps.latest.outputs.deploy == 'true'
         run: scripts/deploy-site.sh
+
+      # Marks what is live: a permanent tag per deploy (deploy-<date>-<run>)
+      # and a "production" tag that always points at the current one. Tags
+      # pushed with the workflow's own token don't start other workflows.
+      - name: Tag the deployed commit
+        if: steps.latest.outputs.deploy == 'true'
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          tag="deploy-$(date -u +%Y-%m-%d)-${{ github.run_number }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" -m "Deployed to production $(date -u '+%Y-%m-%d %H:%M UTC') by $RUN_URL"
+          git tag -f -a production -m "Live in production since $(date -u '+%Y-%m-%d %H:%M UTC') ($tag)"
+          git push origin "refs/tags/$tag"
+          git push --force origin refs/tags/production
+          echo "::notice::Tagged $(git rev-parse --short HEAD) as $tag and production."
