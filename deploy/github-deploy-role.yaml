@@ -122,6 +122,15 @@ Resources:
                 Effect: Allow
                 Action: cloudformation:CreateChangeSet
                 Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:aws:transform/Serverless-2016-10-31
+              # sam deploy updates its companion stack (which holds the image
+              # repository) directly, not through a change set, so it runs with
+              # this role's own permissions (see ManageTheImageRepository).
+              - Sid: UpdateTheCompanionStack
+                Effect: Allow
+                Action:
+                  - cloudformation:CreateStack
+                  - cloudformation:UpdateStack
+                Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${StackName}-*-CompanionStack/*
               - Sid: ReadOnlyCloudFormation
                 Effect: Allow
                 Action:
@@ -162,6 +171,23 @@ Resources:
                   - ecr:PutImage
                   - ecr:UploadLayerPart
                 # SAM names the repository after the stack, without dashes.
+                Resource: !Sub
+                  - arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/${Prefix}*
+                  - Prefix: !Join ["", !Split ["-", !Ref StackName]]
+              - Sid: ManageTheImageRepository
+                Effect: Allow
+                Action:
+                  - ecr:CreateRepository
+                  - ecr:DeleteRepository
+                  - ecr:GetLifecyclePolicy
+                  - ecr:GetRepositoryPolicy
+                  - ecr:ListTagsForResource
+                  - ecr:PutImageScanningConfiguration
+                  - ecr:PutImageTagMutability
+                  - ecr:PutLifecyclePolicy
+                  - ecr:SetRepositoryPolicy
+                  - ecr:TagResource
+                  - ecr:UntagResource
                 Resource: !Sub
                   - arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/${Prefix}*
                   - Prefix: !Join ["", !Split ["-", !Ref StackName]]
