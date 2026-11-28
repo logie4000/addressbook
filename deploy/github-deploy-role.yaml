@@ -1,0 +1,324 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Lets the GitHub Actions workflow .github/workflows/deploy.yml deploy the
+  address book, with no AWS keys stored in GitHub. GitHub hands each workflow
+  run a short-lived OpenID Connect (OIDC) token; AWS trades it for temporary
+  credentials for GitHubDeployRole, but only when the token says it came from
+  this repository's "production" environment.
+
+  Create this stack once, by hand, with your own administrator credentials
+  (see docs/deploy-aws.md, "Automatic deploys from GitHub").
+
+# Two roles, so GitHub never manages AWS resources directly:
+#
+# - GitHubDeployRole is what the workflow runs as. It can push the Lambda
+#   image, upload SAM's build files, ask CloudFormation to update the
+#   addressbook-production stack, and publish the website.
+# - CloudFormationDeployRole is what CloudFormation uses to make the actual
+#   changes (Lambda, DynamoDB, CloudFront, Cognito and so on). Only
+#   CloudFormation can use it, and only on the stacks GitHubDeployRole may
+#   touch.
+#
+# Be aware: anything allowed to update a stack that creates IAM roles could,
+# with a hand-made template, give itself more power in this account. The real
+# protection is who can run the workflow: only commits on main, through the
+# GitHub "production" environment (which can also require your approval).
+
+Parameters:
+  GitHubRepository:
+    Type: String
+    Default: logie4000/addressbook
+    Description: owner/name of the GitHub repository allowed to deploy.
+
+  GitHubEnvironment:
+    Type: String
+    Default: production
+    Description: >
+      GitHub environment the deploy job runs in. Restrict it to the main
+      branch in the repository's settings.
+
+  StackName:
+    Type: String
+    Default: addressbook-production
+    Description: The SAM stack the workflow deploys (stack_name in samconfig.toml).
+
+  StageName:
+    Type: String
+    Default: production
+    Description: StageName parameter of that stack (used in resource names).
+
+  CreateOidcProvider:
+    Type: String
+    Default: "true"
+    AllowedValues: ["true", "false"]
+    Description: >
+      An AWS account can hold only one GitHub OIDC provider. Set to "false"
+      if the account already has one (IAM > Identity providers >
+      token.actions.githubusercontent.com).
+
+Conditions:
+  ShouldCreateOidcProvider: !Equals [!Ref CreateOidcProvider, "true"]
+
+Resources:
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: ShouldCreateOidcProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      # AWS no longer checks these for GitHub, but older accounts expect a value.
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+        - 1c58a3a8518e8759bf075b76b750d4f2df264fcd
+
+  GitHubDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: addressbook-github-deploy
+      Description: Assumed by GitHub Actions (production environment) to deploy the address book
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                # A job that names an environment gets this subject instead of
+                # its branch, so the environment's branch rule is what limits
+                # deploys to main.
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:environment:${GitHubEnvironment}
+      Policies:
+        - PolicyName: deploy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # --- sam deploy ---------------------------------------------------
+              - Sid: UpdateTheStacks
+                Effect: Allow
+                Action:
+                  - cloudformation:CreateChangeSet
+                  - cloudformation:DeleteChangeSet
+                  - cloudformation:DescribeChangeSet
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:DescribeStacks
+                  - cloudformation:DescribeStackEvents
+                  - cloudformation:DescribeStackResource
+                  - cloudformation:DescribeStackResources
+                  - cloudformation:GetTemplate
+                  - cloudformation:GetTemplateSummary
+                  - cloudformation:ListStackResources
+                Resource:
+                  - !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${StackName}/*
+                  # SAM's companion stack, which owns the image repository
+                  - !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${StackName}-*
+                  # SAM's own stack, which owns its upload bucket
+                  - !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/aws-sam-cli-managed-default/*
+              - Sid: UseTheSamTransform
+                Effect: Allow
+                Action: cloudformation:CreateChangeSet
+                Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:aws:transform/Serverless-2016-10-31
+              - Sid: ReadOnlyCloudFormation
+                Effect: Allow
+                Action:
+                  - cloudformation:ListStacks
+                  - cloudformation:ValidateTemplate
+                Resource: "*"
+              - Sid: LetCloudFormationMakeTheChanges
+                Effect: Allow
+                Action: iam:PassRole
+                Resource: !GetAtt CloudFormationDeployRole.Arn
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: cloudformation.amazonaws.com
+              - Sid: UploadBuildFiles
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub arn:${AWS::Partition}:s3:::aws-sam-cli-managed-default-samclisourcebucket-*
+                  - !Sub arn:${AWS::Partition}:s3:::aws-sam-cli-managed-default-samclisourcebucket-*/*
+              - Sid: SignInToEcr
+                Effect: Allow
+                Action: ecr:GetAuthorizationToken
+                Resource: "*"
+              - Sid: PushTheApiImage
+                Effect: Allow
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:BatchGetImage
+                  - ecr:CompleteLayerUpload
+                  - ecr:DescribeImages
+                  - ecr:DescribeRepositories
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:InitiateLayerUpload
+                  - ecr:PutImage
+                  - ecr:UploadLayerPart
+                # SAM names the repository after the stack, without dashes.
+                Resource: !Sub
+                  - arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/${Prefix}*
+                  - Prefix: !Join ["", !Split ["-", !Ref StackName]]
+
+              # --- scripts/deploy-site.sh ---------------------------------------
+              - Sid: PublishTheSite
+                Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource:
+                  - !Sub arn:${AWS::Partition}:s3:::${StackName}-sitebucket-*
+                  - !Sub arn:${AWS::Partition}:s3:::${StackName}-sitebucket-*/*
+              - Sid: ClearCloudFrontCache
+                Effect: Allow
+                Action:
+                  - cloudfront:CreateInvalidation
+                  - cloudfront:GetInvalidation
+                Resource: !Sub arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/*
+
+  CloudFormationDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: addressbook-cloudformation-deploy
+      Description: Used by CloudFormation to update the address book stack
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: manage-addressbook-resources
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: Tables
+                Effect: Allow
+                Action: dynamodb:*
+                Resource:
+                  - !Sub arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/addressbook_${StageName}_*
+              - Sid: Functions
+                Effect: Allow
+                Action: lambda:*
+                Resource:
+                  - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:addressbook-*-${StageName}
+                  - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:addressbook-*-${StageName}:*
+              - Sid: FunctionImage
+                Effect: Allow
+                Action:
+                  - ecr:BatchGetImage
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:GetRepositoryPolicy
+                  - ecr:SetRepositoryPolicy
+                Resource: !Sub
+                  - arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/${Prefix}*
+                  - Prefix: !Join ["", !Split ["-", !Ref StackName]]
+              - Sid: FunctionCode
+                Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub arn:${AWS::Partition}:s3:::aws-sam-cli-managed-default-samclisourcebucket-*/*
+              # The functions' own roles. CloudFormation names them
+              # "<stack name>-<resource>-<random>".
+              - Sid: FunctionRoles
+                Effect: Allow
+                Action:
+                  - iam:AttachRolePolicy
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:DeleteRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:GetRole
+                  - iam:GetRolePolicy
+                  - iam:ListAttachedRolePolicies
+                  - iam:ListRolePolicies
+                  - iam:PutRolePolicy
+                  - iam:TagRole
+                  - iam:UntagRole
+                  - iam:UpdateAssumeRolePolicy
+                  - iam:UpdateRole
+                  - iam:UpdateRoleDescription
+                Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${StackName}-*
+              - Sid: GiveFunctionsTheirRoles
+                Effect: Allow
+                Action: iam:PassRole
+                Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${StackName}-*
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: lambda.amazonaws.com
+              - Sid: Logs
+                Effect: Allow
+                Action: logs:*
+                Resource:
+                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/addressbook-*
+                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/addressbook-*:*
+              - Sid: LogsDescribe
+                Effect: Allow
+                Action: logs:DescribeLogGroups
+                Resource: "*"
+              - Sid: Api
+                Effect: Allow
+                Action:
+                  - apigateway:DELETE
+                  - apigateway:GET
+                  - apigateway:PATCH
+                  - apigateway:POST
+                  - apigateway:PUT
+                Resource:
+                  - !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis
+                  - !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis/*
+                  - !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/tags/*
+              - Sid: SiteBucket
+                Effect: Allow
+                Action: s3:*
+                Resource:
+                  - !Sub arn:${AWS::Partition}:s3:::${StackName}-sitebucket-*
+              # CloudFront and Cognito give their resources random ids, so
+              # these can't be narrowed by name.
+              - Sid: CloudFront
+                Effect: Allow
+                Action: cloudfront:*
+                Resource: "*"
+              - Sid: Certificate
+                Effect: Allow
+                Action:
+                  - acm:DescribeCertificate
+                  - acm:ListCertificates
+                  - iam:ListServerCertificates
+                Resource: "*"
+              - Sid: SignIn
+                Effect: Allow
+                Action: cognito-idp:*
+                Resource:
+                  - !Sub arn:${AWS::Partition}:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/*
+              - Sid: SignInDescribe
+                Effect: Allow
+                Action:
+                  - cognito-idp:DescribeUserPoolDomain
+                  - cognito-idp:CreateUserPoolDomain
+                  - cognito-idp:DeleteUserPoolDomain
+                  - cognito-idp:UpdateUserPoolDomain
+                Resource: "*"
+              # Reads the Google client secret ({{resolve:ssm:...}}).
+              - Sid: Parameters
+                Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Resource: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/addressbook/${StageName}/*
+
+Outputs:
+  GitHubDeployRoleArn:
+    Description: Role the deploy workflow assumes (role-to-assume in deploy.yml)
+    Value: !GetAtt GitHubDeployRole.Arn
+  CloudFormationDeployRoleArn:
+    Description: Role CloudFormation uses for the stack (sam deploy --role-arn)
+    Value: !GetAtt CloudFormationDeployRole.Arn
